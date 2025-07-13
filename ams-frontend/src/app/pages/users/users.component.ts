@@ -22,6 +22,8 @@ import { Subject, debounceTime, distinctUntilChanged, takeUntil, startWith, swit
 import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
 import { User } from '../../models/user.model';
+import { UserDialogComponent, UserDialogData } from './user-dialog.component';
+import { ConfirmDialogComponent, ConfirmDialogData } from '../../components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-users',
@@ -460,29 +462,90 @@ export class UsersComponent implements OnInit, OnDestroy {
     }
   }
 
-  openUserDialog(user?: User): void {
-    // TODO: Implement user dialog
-    console.log('Open user dialog:', user);
+  openUserDialog(user?: User, mode: 'add' | 'edit' | 'view' = 'add'): void {
+    const dialogRef = this.dialog.open(UserDialogComponent, {
+      data: { mode, user } as UserDialogData,
+      width: '400px'
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && mode === 'add') {
+        // Add user
+        this.loading = true;
+        this.userService.createUser(result).subscribe({
+          next: () => {
+            this.snackBar.open('User added successfully', 'Close', { duration: 3000 });
+            this.loadUsers();
+          },
+          error: (error) => {
+            this.snackBar.open('Failed to add user', 'Close', { duration: 3000 });
+            this.loading = false;
+          }
+        });
+      } else if (result && mode === 'edit' && user) {
+        // Edit user
+        this.loading = true;
+        this.userService.updateUser(user.id, { ...result, password: undefined }).subscribe({
+          next: () => {
+            this.snackBar.open('User updated successfully', 'Close', { duration: 3000 });
+            this.loadUsers();
+          },
+          error: (error) => {
+            this.snackBar.open('Failed to update user', 'Close', { duration: 3000 });
+            this.loading = false;
+          }
+        });
+      }
+    });
   }
 
   viewUser(user: User): void {
-    // TODO: Implement view user details
-    console.log('View user:', user);
+    this.openUserDialog(user, 'view');
   }
 
   editUser(user: User): void {
-    // TODO: Implement edit user
-    console.log('Edit user:', user);
+    this.openUserDialog(user, 'edit');
   }
 
   toggleUserStatus(user: User): void {
-    // TODO: Implement toggle user status
-    console.log('Toggle user status:', user);
+    const updated = { ...user, isActive: !user.isActive };
+    this.loading = true;
+    this.userService.updateUser(user.id, updated).subscribe({
+      next: () => {
+        this.snackBar.open(`User ${updated.isActive ? 'activated' : 'deactivated'} successfully`, 'Close', { duration: 3000 });
+        this.loadUsers();
+      },
+      error: (error) => {
+        this.snackBar.open('Failed to update user status', 'Close', { duration: 3000 });
+        this.loading = false;
+      }
+    });
   }
 
   deleteUser(user: User): void {
-    // TODO: Implement delete user with confirmation
-    console.log('Delete user:', user);
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Delete User',
+        message: `Are you sure you want to delete user "${user.firstName} ${user.lastName}"? This action cannot be undone.`,
+        confirmButtonText: 'Delete',
+        cancelButtonText: 'Cancel'
+      } as ConfirmDialogData
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loading = true;
+        this.userService.deleteUser(user.id).subscribe({
+          next: () => {
+            this.snackBar.open('User deleted successfully', 'Close', { duration: 3000 });
+            this.loadUsers();
+          },
+          error: (error) => {
+            this.snackBar.open('Failed to delete user', 'Close', { duration: 3000 });
+            this.loading = false;
+          }
+        });
+      }
+    });
   }
 
   hasRole(role: string): boolean {

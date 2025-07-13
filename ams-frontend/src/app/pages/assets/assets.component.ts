@@ -376,6 +376,7 @@ export class AssetsComponent implements OnInit, OnDestroy {
       this.assets = Array.isArray(assetsAny) ? assetsAny : (assetsAny?.data || assetsAny?.Data || []);
       this.loading = false;
       this.error = '';
+      this.deletingAssetId = null;
       this.cdr.markForCheck();
     });
   }

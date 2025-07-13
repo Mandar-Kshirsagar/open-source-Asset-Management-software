@@ -100,6 +100,7 @@ builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<RefreshTokenService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<AssetService>();
+builder.Services.AddHttpClient();
 
 // Configure Swagger
 builder.Services.AddEndpointsApiExplorer();
