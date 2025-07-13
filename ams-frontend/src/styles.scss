@@ -1,0 +1,56 @@
+/* You can add global styles to this file, and also import other style files */
+
+/* Performance optimizations */
+* {
+  box-sizing: border-box;
+}
+
+html, body { 
+  height: 100%; 
+  margin: 0;
+  padding: 0;
+}
+
+body { 
+  margin: 0; 
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Optimize Material Design performance */
+.mat-mdc-card {
+  will-change: transform;
+}
+
+/* Optimize animations */
+.mat-mdc-progress-spinner {
+  will-change: transform;
+}
+
+/* Optimize virtual scrolling */
+.cdk-virtual-scroll-viewport {
+  will-change: scroll-position;
+}
+
+/* Reduce layout thrashing */
+.assets-grid {
+  contain: layout style paint;
+}
+
+/* Optimize font loading */
+@font-face {
+  font-family: 'Roboto';
+  font-display: swap;
+}
+
+/* Performance-focused utility classes */
+.performance-optimized {
+  contain: layout style paint;
+  will-change: auto;
+}
+
+.no-layout-shift {
+  contain: layout;
+}
