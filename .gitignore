@@ -1,0 +1,2 @@
+# Ignore backend development config with secrets
+AMS.Api/appsettings.Development.json 
