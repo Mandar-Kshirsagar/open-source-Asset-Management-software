@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "owHMSUaUlr8=",
+  "dgSpecHash": "THlRgh/78xA=",
   "success": true,
-  "projectFilePath": "C:\\Users\\mandar\\Desktop\\AMS\\AMS.Api\\AMS.Api.csproj",
+  "projectFilePath": "C:\\Users\\mandar\\Desktop\\AMS\\open-source-Asset-Management-software\\AMS.Api\\AMS.Api.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\mandar\\.nuget\\packages\\automapper\\12.0.1\\automapper.12.0.1.nupkg.sha512",
     "C:\\Users\\mandar\\.nuget\\packages\\automapper.extensions.microsoft.dependencyinjection\\12.0.1\\automapper.extensions.microsoft.dependencyinjection.12.0.1.nupkg.sha512",

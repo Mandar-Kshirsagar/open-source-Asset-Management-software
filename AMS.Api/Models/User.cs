@@ -34,5 +34,6 @@ namespace AMS.Api.Models
         // Navigation properties
         public virtual ICollection<Asset> AssignedAssets { get; set; } = new List<Asset>();
         public virtual ICollection<AssetHistory> AssetHistories { get; set; } = new List<AssetHistory>();
+        public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
     }
 } 

@@ -13,6 +13,7 @@ namespace AMS.Api.Data
         public DbSet<Asset> Assets { get; set; }
         public DbSet<AssetHistory> AssetHistories { get; set; }
         public DbSet<MaintenanceRecord> MaintenanceRecords { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -84,6 +85,20 @@ namespace AMS.Api.Data
                     .WithMany()
                     .HasForeignKey(e => e.AssignedToUserId)
                     .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // RefreshToken configuration
+            modelBuilder.Entity<RefreshToken>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Token).IsRequired().HasMaxLength(500);
+                entity.Property(e => e.ExpiryDate).IsRequired();
+                entity.HasIndex(e => e.Token).IsUnique();
+                
+                entity.HasOne(e => e.User)
+                    .WithMany(e => e.RefreshTokens)
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             // Seed data

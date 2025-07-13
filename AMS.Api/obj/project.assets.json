@@ -4476,11 +4476,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\mandar\\Desktop\\AMS\\AMS.Api\\AMS.Api.csproj",
+      "projectUniqueName": "C:\\Users\\mandar\\Desktop\\AMS\\open-source-Asset-Management-software\\AMS.Api\\AMS.Api.csproj",
       "projectName": "AMS.Api",
-      "projectPath": "C:\\Users\\mandar\\Desktop\\AMS\\AMS.Api\\AMS.Api.csproj",
+      "projectPath": "C:\\Users\\mandar\\Desktop\\AMS\\open-source-Asset-Management-software\\AMS.Api\\AMS.Api.csproj",
       "packagesPath": "C:\\Users\\mandar\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\mandar\\Desktop\\AMS\\AMS.Api\\obj\\",
+      "outputPath": "C:\\Users\\mandar\\Desktop\\AMS\\open-source-Asset-Management-software\\AMS.Api\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"

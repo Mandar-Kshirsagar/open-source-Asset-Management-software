@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using AMS.Api.Data;
 using AMS.Api.Models;
 using AMS.Api.DTOs;
@@ -10,14 +11,16 @@ namespace AMS.Api.Services
     {
         private readonly AMSContext _context;
         private readonly IMapper _mapper;
+        private readonly IMemoryCache _cache;
 
-        public AssetService(AMSContext context, IMapper mapper)
+        public AssetService(AMSContext context, IMapper mapper, IMemoryCache cache)
         {
             _context = context;
             _mapper = mapper;
+            _cache = cache;
         }
 
-        public async Task<IEnumerable<AssetDto>> GetAllAssetsAsync(AssetFilterDto? filter = null)
+        public async Task<PaginatedResponseDto<AssetDto>> GetAllAssetsAsync(AssetFilterDto? filter = null)
         {
             var query = _context.Assets
                 .Include(a => a.AssignedToUser)
@@ -55,12 +58,34 @@ namespace AMS.Api.Services
                 }
             }
 
+            // Get total count for pagination
+            var totalCount = await query.CountAsync();
+
+            // Apply pagination
+            var page = filter?.Page ?? 1;
+            var pageSize = filter?.PageSize ?? 10;
+            var skip = (page - 1) * pageSize;
+
             var assets = await query
-                .Skip((filter?.Page - 1 ?? 0) * (filter?.PageSize ?? 10))
-                .Take(filter?.PageSize ?? 10)
+                .OrderBy(a => a.Name)
+                .Skip(skip)
+                .Take(pageSize)
                 .ToListAsync();
 
-            return _mapper.Map<IEnumerable<AssetDto>>(assets);
+            var assetDtos = _mapper.Map<IEnumerable<AssetDto>>(assets);
+
+            var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+            return new PaginatedResponseDto<AssetDto>
+            {
+                Data = assetDtos,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize,
+                TotalPages = totalPages,
+                HasNextPage = page < totalPages,
+                HasPreviousPage = page > 1
+            };
         }
 
         public async Task<AssetDto?> GetAssetByIdAsync(int id)
@@ -101,6 +126,10 @@ namespace AMS.Api.Services
             _context.Assets.Add(asset);
             await _context.SaveChangesAsync();
 
+            // Invalidate cache when new asset is created
+            _cache.Remove("AssetCategories");
+            _cache.Remove("AssetLocations");
+
             return _mapper.Map<AssetDto>(asset);
         }
 
@@ -129,6 +158,10 @@ namespace AMS.Api.Services
 
             await _context.SaveChangesAsync();
 
+            // Invalidate cache when asset is updated
+            _cache.Remove("AssetCategories");
+            _cache.Remove("AssetLocations");
+
             // Reload with navigation properties
             await _context.Entry(asset).Reference(a => a.AssignedToUser).LoadAsync();
 
@@ -145,6 +178,10 @@ namespace AMS.Api.Services
 
             _context.Assets.Remove(asset);
             await _context.SaveChangesAsync();
+
+            // Invalidate cache when asset is deleted
+            _cache.Remove("AssetCategories");
+            _cache.Remove("AssetLocations");
 
             return true;
         }
@@ -229,18 +266,48 @@ namespace AMS.Api.Services
 
         public async Task<IEnumerable<string>> GetAssetCategoriesAsync()
         {
-            return await _context.Assets
+            const string cacheKey = "AssetCategories";
+            
+            if (_cache.TryGetValue(cacheKey, out IEnumerable<string>? cachedCategories))
+            {
+                return cachedCategories!;
+            }
+
+            var categories = await _context.Assets
                 .Select(a => a.Category)
                 .Distinct()
                 .ToListAsync();
+
+            // Cache for 30 minutes
+            var cacheOptions = new MemoryCacheEntryOptions()
+                .SetSlidingExpiration(TimeSpan.FromMinutes(30));
+
+            _cache.Set(cacheKey, categories, cacheOptions);
+
+            return categories;
         }
 
         public async Task<IEnumerable<string>> GetAssetLocationsAsync()
         {
-            return await _context.Assets
+            const string cacheKey = "AssetLocations";
+            
+            if (_cache.TryGetValue(cacheKey, out IEnumerable<string>? cachedLocations))
+            {
+                return cachedLocations!;
+            }
+
+            var locations = await _context.Assets
                 .Select(a => a.Location)
                 .Distinct()
                 .ToListAsync();
+
+            // Cache for 30 minutes
+            var cacheOptions = new MemoryCacheEntryOptions()
+                .SetSlidingExpiration(TimeSpan.FromMinutes(30));
+
+            _cache.Set(cacheKey, locations, cacheOptions);
+
+            return locations;
         }
 
         public async Task<DashboardStatsDto> GetDashboardStatsAsync()

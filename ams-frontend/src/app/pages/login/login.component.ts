@@ -100,16 +100,17 @@ export class LoginComponent {
       return;
     }
 
-    setTimeout(() => {
-      this.isLoading = true;
-    });
+    this.isLoading = true;
     
     this.authService.login(this.loginRequest).subscribe({
       next: () => {
+        this.isLoading = false;
+        this.cdr.detectChanges();
         this.router.navigate(['/dashboard']);
       },
       error: (error) => {
         this.isLoading = false;
+        this.cdr.detectChanges();
         this.snackBar.open('Login failed. Please check your credentials.', 'Close', { duration: 3000 });
       }
     });

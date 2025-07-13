@@ -343,6 +343,8 @@ export class AssetsComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar,
     private cdr: ChangeDetectorRef
   ) {
+    this.currentUser = this.authService.getCurrentUser();
+    this.isAdmin = this.authService.hasRole('Admin');
     // Setup debounced search with better performance
     this.searchSubject.pipe(
       startWith(''),
@@ -370,15 +372,15 @@ export class AssetsComponent implements OnInit, OnDestroy {
       }),
       takeUntil(this.destroy$)
     ).subscribe(assets => {
-      this.assets = assets;
+      const assetsAny: any = assets;
+      this.assets = Array.isArray(assetsAny) ? assetsAny : (assetsAny?.data || assetsAny?.Data || []);
       this.loading = false;
       this.error = '';
+      this.cdr.markForCheck();
     });
   }
 
   ngOnInit(): void {
-    this.currentUser = this.authService.getCurrentUser();
-    this.isAdmin = this.authService.hasRole('Admin');
     // Initial load is handled by the searchSubject with startWith('')
   }
 

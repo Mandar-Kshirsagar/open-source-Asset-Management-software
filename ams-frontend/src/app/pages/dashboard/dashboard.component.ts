@@ -14,6 +14,7 @@ import { AuthService } from '../../services/auth.service';
 import { AssetService } from '../../services/asset.service';
 import { User } from '../../models/user.model';
 import { Asset } from '../../models/asset.model';
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-dashboard',
@@ -348,7 +349,8 @@ export class DashboardComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private assetService: AssetService
+    private assetService: AssetService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -369,13 +371,15 @@ export class DashboardComponent implements OnInit {
         this.availableAssets = stats.availableAssets;
         this.assignedAssets = stats.assignedAssets;
         this.maintenanceAssets = stats.maintenanceAssets;
-        this.recentAssets = stats.recentAssets;
+        this.recentAssets = stats.recentAssets || [];
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading dashboard stats:', err);
         this.error = 'Failed to load dashboard data. Please check your connection and try again.';
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }

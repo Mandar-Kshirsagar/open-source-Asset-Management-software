@@ -18,7 +18,7 @@ namespace AMS.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<AssetDto>>> GetAllAssets([FromQuery] AssetFilterDto? filter)
+        public async Task<ActionResult<PaginatedResponseDto<AssetDto>>> GetAllAssets([FromQuery] AssetFilterDto? filter)
         {
             try
             {

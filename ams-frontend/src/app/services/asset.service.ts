@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators'; // <-- Add this import
 import { environment } from '../../environments/environment';
 import { Asset, CreateAsset, UpdateAsset, AssetFilter } from '../models/asset.model';
 
@@ -39,7 +40,10 @@ export class AssetService {
       }
     }
 
-    return this.http.get<Asset[]>(this.apiUrl, { params });
+    // Fix: extract the 'data' property from the paginated response (handle both camelCase and PascalCase)
+    return this.http.get<any>(this.apiUrl, { params }).pipe(
+      map(response => response.data || response.Data || [])
+    );
   }
 
   getAssetById(id: number): Observable<Asset> {

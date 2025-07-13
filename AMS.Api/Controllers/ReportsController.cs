@@ -142,7 +142,7 @@ namespace AMS.Api.Controllers
                         TotalInProgress = g.Count(m => m.Status == "In Progress"),
                         TotalCompleted = g.Count(m => m.Status == "Completed"),
                         TotalCancelled = g.Count(m => m.Status == "Cancelled"),
-                        TotalCost = g.Where(m => m.Cost.HasValue).Sum(m => m.Cost.Value)
+                        TotalCost = g.Where(m => m.Cost.HasValue).Sum(m => m.Cost!.Value)
                     })
                     .ToListAsync();
 
