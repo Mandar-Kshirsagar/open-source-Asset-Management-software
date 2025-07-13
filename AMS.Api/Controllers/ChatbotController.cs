@@ -5,6 +5,9 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using AMS.Api.Data;
+using AMS.Api.DTOs;
+using Microsoft.EntityFrameworkCore;
 
 namespace AMS.Api.Controllers
 {
@@ -14,11 +17,13 @@ namespace AMS.Api.Controllers
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IConfiguration _configuration;
+        private readonly AMSContext _context;
 
-        public ChatbotController(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+        public ChatbotController(IHttpClientFactory httpClientFactory, IConfiguration configuration, AMSContext context)
         {
             _httpClientFactory = httpClientFactory;
             _configuration = configuration;
+            _context = context;
         }
 
         public class ChatRequest
@@ -40,6 +45,45 @@ namespace AMS.Api.Controllers
                 return StatusCode(500, new { error = "OpenAI API key is not configured." });
             }
 
+            // Dynamic knowledge: parse question and fetch relevant data
+            string dataPrompt = string.Empty;
+            string lowerMsg = request.Message.ToLower();
+
+            if (lowerMsg.Contains("asset"))
+            {
+                var assets = await _context.Assets.Include(a => a.AssignedToUser).Take(5).ToListAsync();
+                dataPrompt = "Sample assets: " + string.Join("; ", assets.Select(a => $"{a.Name} (Tag: {a.AssetTag}, Status: {a.Status}, Assigned: {(a.AssignedToUser != null ? a.AssignedToUser.FirstName + " " + a.AssignedToUser.LastName : "None")})"));
+            }
+            else if (lowerMsg.Contains("user"))
+            {
+                var users = await _context.Users.Take(5).ToListAsync();
+                dataPrompt = "Sample users: " + string.Join("; ", users.Select(u => $"{u.FirstName} {u.LastName} (Username: {u.Username}, Role: {u.Role}, Active: {u.IsActive})"));
+            }
+            else if (lowerMsg.Contains("maintenance"))
+            {
+                var maint = await _context.MaintenanceRecords.Include(m => m.Asset).OrderByDescending(m => m.ScheduledDate).Take(5).ToListAsync();
+                dataPrompt = "Recent maintenance: " + string.Join("; ", maint.Select(m => $"{m.Title} for {m.Asset.Name} on {m.ScheduledDate:yyyy-MM-dd} (Status: {m.Status})"));
+            }
+            else if (lowerMsg.Contains("history") || lowerMsg.Contains("activity"))
+            {
+                var history = await _context.AssetHistories.Include(h => h.Asset).Include(h => h.User).OrderByDescending(h => h.Timestamp).Take(5).ToListAsync();
+                dataPrompt = "Recent activity: " + string.Join("; ", history.Select(h => $"{h.Action} on {h.Asset.Name} by {(h.User != null ? h.User.FirstName + " " + h.User.LastName : "System")} at {h.Timestamp:yyyy-MM-dd HH:mm}"));
+            }
+            else
+            {
+                // Default: provide a summary of the system
+                int assetCount = await _context.Assets.CountAsync();
+                int userCount = await _context.Users.CountAsync();
+                int maintCount = await _context.MaintenanceRecords.CountAsync();
+                dataPrompt = $"System summary: {assetCount} assets, {userCount} users, {maintCount} maintenance records.";
+            }
+
+            // DEBUG: Return the dataPrompt for troubleshooting
+            if (request.Message.Trim().ToLower() == "debug-dataprompt")
+            {
+                return Ok(new { dataPrompt });
+            }
+
             var httpClient = _httpClientFactory.CreateClient();
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
 
@@ -48,8 +92,8 @@ namespace AMS.Api.Controllers
                 model = "gpt-3.5-turbo",
                 messages = new[]
                 {
-                    new { role = "system", content = "You are an assistant for the Asset Management System. Answer questions and help users with information from the system." },
-                    new { role = "user", content = request.Message }
+                    new { role = "system", content = "You are an assistant for the Asset Management System. Only answer using the provided data. If the answer is not present in the data, say 'I don't know.' Do not make up information." },
+                    new { role = "user", content = dataPrompt + "\nUser question: " + request.Message }
                 },
                 max_tokens = 256
             };
