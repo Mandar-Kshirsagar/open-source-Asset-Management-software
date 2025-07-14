@@ -31,12 +31,10 @@ import { User } from '../../models/user.model';
   template: `
     <div class="assets-container">
       <!-- Header Toolbar -->
-      <mat-toolbar color="primary" class="assets-toolbar">
-        <mat-icon class="snipe-logo">inventory</mat-icon>
-        <span class="app-title">SNIPE-IT</span>
-        <span class="subtitle">ASSET MANAGEMENT</span>
+      <mat-toolbar color="primary" class="assets-toolbar modern-toolbar">
+        <mat-icon class="app-logo">inventory</mat-icon>
+        <span class="app-title">Asset Manager</span>
         <span class="toolbar-spacer"></span>
-        
         <!-- Top Navigation Icons -->
         <button mat-icon-button matTooltip="List View">
           <mat-icon>view_list</mat-icon>
@@ -53,18 +51,16 @@ import { User } from '../../models/user.model';
         <button mat-icon-button matTooltip="Settings">
           <mat-icon>settings</mat-icon>
         </button>
-        
         <!-- Search Bar -->
         <mat-form-field class="header-search" appearance="outline">
-          <mat-label>Lookup by Asset Tag</mat-label>
+          <mat-label>Search Assets</mat-label>
           <input matInput [(ngModel)]="searchTerm" (input)="onSearch()" placeholder="Search...">
           <mat-icon matSuffix>search</mat-icon>
         </mat-form-field>
-        
         <!-- Create New Button -->
         <button mat-raised-button color="accent" [matMenuTriggerFor]="createMenu" class="create-button">
           <mat-icon>add</mat-icon>
-          Create New
+          New
           <mat-icon>arrow_drop_down</mat-icon>
         </button>
         <mat-menu #createMenu="matMenu">
@@ -81,7 +77,6 @@ import { User } from '../../models/user.model';
             Location
           </button>
         </mat-menu>
-        
         <!-- User Menu -->
         <button mat-icon-button [matMenuTriggerFor]="userMenu" class="user-avatar">
           <mat-icon>account_circle</mat-icon>
@@ -97,12 +92,7 @@ import { User } from '../../models/user.model';
           </button>
         </mat-menu>
       </mat-toolbar>
-
-      <!-- Demo Mode Banner -->
-      <div class="demo-banner">
-        <mat-icon>info</mat-icon>
-        DEMO MODE: Some features are disabled for this installation.
-      </div>
+      <!-- Removed Demo Mode Banner for cleaner UI -->
 
       <!-- Breadcrumb -->
       <div class="breadcrumb">
@@ -375,7 +365,7 @@ import { User } from '../../models/user.model';
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    .snipe-logo {
+    .app-logo {
       font-size: 28px;
       margin-right: 8px;
       color: #ff6b35;
@@ -385,12 +375,6 @@ import { User } from '../../models/user.model';
       font-size: 20px;
       font-weight: bold;
       margin-right: 8px;
-    }
-
-    .subtitle {
-      font-size: 12px;
-      opacity: 0.8;
-      margin-right: auto;
     }
 
     .toolbar-spacer {

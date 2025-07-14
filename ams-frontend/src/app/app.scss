@@ -1,0 +1,104 @@
+// Modern, clean, and consistent global styles
+body {
+  font-family: 'Inter', 'Roboto', 'Arial', sans-serif;
+  background: #f7f8fa;
+  color: #222;
+  margin: 0;
+}
+
+.mat-toolbar, .assets-toolbar {
+  background: #2d3748 !important;
+  color: #fff !important;
+  box-shadow: 0 2px 8px rgba(44,62,80,0.07);
+  border-radius: 0 0 12px 12px;
+}
+
+.app-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.create-button {
+  border-radius: 24px !important;
+  font-weight: 500;
+  padding: 0 18px;
+  box-shadow: 0 2px 8px rgba(44,62,80,0.07);
+}
+
+.mat-form-field {
+  background: #fff;
+  border-radius: 8px;
+}
+
+.assets-container {
+  max-width: 1200px;
+  margin: 32px auto;
+  padding: 24px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(44,62,80,0.08);
+}
+
+.breadcrumb {
+  margin: 16px 0 24px 0;
+  font-size: 1rem;
+  color: #718096;
+  display: flex;
+  align-items: center;
+}
+
+.breadcrumb-separator {
+  margin: 0 8px;
+}
+
+.filters-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.filter-left, .filter-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.assets-table {
+  width: 100%;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(44,62,80,0.04);
+}
+
+.asset-link {
+  color: #3182ce;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.asset-link:hover {
+  text-decoration: underline;
+}
+
+.status-chip {
+  border-radius: 16px;
+  padding: 2px 12px;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.user-avatar {
+  margin-left: 12px;
+}
+
+@media (max-width: 900px) {
+  .assets-container {
+    padding: 8px;
+  }
+  .filters-container {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
