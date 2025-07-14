@@ -28,9 +28,7 @@ import { User } from '../../models/user.model';
     RouterModule,
     ReactiveFormsModule,
     FormsModule,
-    SharedMaterialModule,
-    HeaderComponent,
-    BreadcrumbComponent
+    SharedMaterialModule
   ],
   template: `
     <div class="assets-container">

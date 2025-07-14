@@ -1,1 +1,31 @@
-<p>main-layout works!</p>
+<div class="main-root">
+  <app-header></app-header>
+  <app-breadcrumb></app-breadcrumb>
+  <mat-sidenav-container class="main-sidenav-container">
+    <mat-sidenav mode="side" opened class="main-sidenav">
+      <mat-nav-list>
+        <a mat-list-item routerLink="/dashboard" routerLinkActive="active">
+          <mat-icon>dashboard</mat-icon>
+          <span>Dashboard</span>
+        </a>
+        <a mat-list-item routerLink="/assets" routerLinkActive="active">
+          <mat-icon>inventory</mat-icon>
+          <span>Assets</span>
+        </a>
+        <a mat-list-item routerLink="/users" routerLinkActive="active">
+          <mat-icon>people</mat-icon>
+          <span>Users</span>
+        </a>
+        <a mat-list-item routerLink="/reports" routerLinkActive="active">
+          <mat-icon>analytics</mat-icon>
+          <span>Reports</span>
+        </a>
+      </mat-nav-list>
+    </mat-sidenav>
+    <mat-sidenav-content>
+      <div class="main-content">
+        <router-outlet></router-outlet>
+      </div>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>

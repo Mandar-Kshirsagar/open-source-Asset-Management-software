@@ -21,28 +21,43 @@ import { ChangeDetectorRef } from '@angular/core';
     BreadcrumbComponent
   ],
   template: `
-    <div class="dashboard-container">
-      <!-- Modern Header -->
+    <div class="dashboard-root">
       <app-header 
         [currentUser]="currentUser"
         [actionButtonText]="'New Asset'"
         [actionButtonIcon]="'add'"
         (actionClick)="navigateToNewAsset()">
       </app-header>
-
-      <!-- Breadcrumb -->
       <app-breadcrumb [items]="breadcrumbItems"></app-breadcrumb>
-
-      <!-- Dashboard Content -->
-      <div class="dashboard-content">
+      <mat-sidenav-container class="dashboard-sidenav-container">
+        <mat-sidenav mode="side" opened class="dashboard-sidenav">
+          <mat-nav-list>
+            <a mat-list-item routerLink="/dashboard" routerLinkActive="active">
+              <mat-icon>dashboard</mat-icon>
+              <span>Dashboard</span>
+            </a>
+            <a mat-list-item routerLink="/assets" routerLinkActive="active">
+              <mat-icon>inventory</mat-icon>
+              <span>Assets</span>
+            </a>
+            <a mat-list-item routerLink="/users" routerLinkActive="active">
+              <mat-icon>people</mat-icon>
+              <span>Users</span>
+            </a>
+            <a mat-list-item routerLink="/reports" routerLinkActive="active">
+              <mat-icon>analytics</mat-icon>
+              <span>Reports</span>
+            </a>
+          </mat-nav-list>
+        </mat-sidenav>
+        <mat-sidenav-content>
+          <div class="dashboard-content">
             <h1>Dashboard</h1>
-            
             <!-- Loading State -->
             <div *ngIf="loading" class="loading-container">
               <mat-spinner diameter="50"></mat-spinner>
               <p>Loading dashboard data...</p>
             </div>
-
             <!-- Error State -->
             <div *ngIf="error" class="error-container">
               <mat-icon color="warn">error</mat-icon>
@@ -53,7 +68,6 @@ import { ChangeDetectorRef } from '@angular/core';
                 Retry
               </button>
             </div>
-
             <!-- Dashboard Content -->
             <div *ngIf="!loading && !error">
               <div class="stats-grid">
@@ -68,7 +82,6 @@ import { ChangeDetectorRef } from '@angular/core';
                     </div>
                   </mat-card-content>
                 </mat-card>
-
                 <mat-card>
                   <mat-card-content>
                     <div class="stat-item">
@@ -80,7 +93,6 @@ import { ChangeDetectorRef } from '@angular/core';
                     </div>
                   </mat-card-content>
                 </mat-card>
-
                 <mat-card>
                   <mat-card-content>
                     <div class="stat-item">
@@ -92,7 +104,6 @@ import { ChangeDetectorRef } from '@angular/core';
                     </div>
                   </mat-card-content>
                 </mat-card>
-
                 <mat-card>
                   <mat-card-content>
                     <div class="stat-item">
@@ -105,7 +116,6 @@ import { ChangeDetectorRef } from '@angular/core';
                   </mat-card-content>
                 </mat-card>
               </div>
-
               <div class="recent-assets">
                 <h2>Recent Assets</h2>
                 <div *ngIf="recentAssets.length === 0" class="no-assets">
@@ -135,24 +145,43 @@ import { ChangeDetectorRef } from '@angular/core';
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        </mat-sidenav-content>
+      </mat-sidenav-container>
+    </div>
   `,
   styles: [`
-    .dashboard-container {
+    .dashboard-root {
       height: 100vh;
       display: flex;
       flex-direction: column;
       background-color: #f5f5f5;
     }
-
+    .dashboard-sidenav-container {
+      flex: 1;
+      display: flex;
+      height: calc(100vh - 112px); /* header + breadcrumb height */
+      background: #f5f5f5;
+    }
+    .dashboard-sidenav {
+      width: 220px;
+      background: #fff;
+      border-right: 1px solid #e0e0e0;
+      padding-top: 16px;
+    }
+    .dashboard-sidenav .mat-icon {
+      margin-right: 12px;
+      color: #3f51b5;
+    }
+    .dashboard-sidenav .active {
+      background: #e3f2fd !important;
+      color: #1976d2 !important;
+    }
     .dashboard-content {
       flex: 1;
       padding: 24px;
       overflow: auto;
       background: #f5f5f5;
     }
-
     .dashboard-content h1 {
       margin: 0 0 24px 0;
       color: #333;
@@ -295,6 +324,16 @@ import { ChangeDetectorRef } from '@angular/core';
       display: flex;
       align-items: center;
       gap: 10px;
+    }
+
+    @media (max-width: 900px) {
+      .dashboard-sidenav {
+        width: 60px;
+        padding-top: 8px;
+      }
+      .dashboard-sidenav .mat-list-item span {
+        display: none;
+      }
     }
   `]
 })
