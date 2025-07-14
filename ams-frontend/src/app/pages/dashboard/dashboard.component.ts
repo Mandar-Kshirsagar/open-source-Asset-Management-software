@@ -1,15 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatListModule } from '@angular/material/list';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { SharedMaterialModule } from '../../shared/material.module';
+import { HeaderComponent } from '../../shared/header/header.component';
+import { BreadcrumbComponent, BreadcrumbItem } from '../../shared/breadcrumb/breadcrumb.component';
 import { AuthService } from '../../services/auth.service';
 import { AssetService } from '../../services/asset.service';
 import { User } from '../../models/user.model';
@@ -22,57 +16,25 @@ import { ChangeDetectorRef } from '@angular/core';
   imports: [
     CommonModule,
     RouterModule,
-    MatCardModule,
-    MatButtonModule,
-    MatIconModule,
-    MatToolbarModule,
-    MatSidenavModule,
-    MatListModule,
-    MatMenuModule,
-    MatProgressSpinnerModule,
-    MatSnackBarModule
+    SharedMaterialModule,
+    HeaderComponent,
+    BreadcrumbComponent
   ],
   template: `
-    <mat-toolbar color="primary">
-      <span>Asset Management System</span>
-      <span class="spacer"></span>
-      <button mat-button [matMenuTriggerFor]="userMenu">
-        {{ currentUser?.firstName }} {{ currentUser?.lastName }}
-        <mat-icon>arrow_drop_down</mat-icon>
-      </button>
-      <mat-menu #userMenu="matMenu">
-        <button mat-menu-item (click)="logout()">
-          <mat-icon>logout</mat-icon>
-          <span>Logout</span>
-        </button>
-      </mat-menu>
-    </mat-toolbar>
-
     <div class="dashboard-container">
-      <mat-sidenav-container>
-        <mat-sidenav mode="side" opened class="sidenav">
-          <mat-nav-list>
-            <a mat-list-item routerLink="/dashboard" routerLinkActive="active">
-              <mat-icon>dashboard</mat-icon>
-              <span>Dashboard</span>
-            </a>
-            <a mat-list-item routerLink="/assets" routerLinkActive="active">
-              <mat-icon>inventory</mat-icon>
-              <span>Assets</span>
-            </a>
-            <a mat-list-item routerLink="/users" routerLinkActive="active" *ngIf="hasRole('Admin')">
-              <mat-icon>people</mat-icon>
-              <span>Users</span>
-            </a>
-            <a mat-list-item routerLink="/reports" routerLinkActive="active">
-              <mat-icon>analytics</mat-icon>
-              <span>Reports</span>
-            </a>
-          </mat-nav-list>
-        </mat-sidenav>
+      <!-- Modern Header -->
+      <app-header 
+        [currentUser]="currentUser"
+        [actionButtonText]="'New Asset'"
+        [actionButtonIcon]="'add'"
+        (actionClick)="navigateToNewAsset()">
+      </app-header>
 
-        <mat-sidenav-content class="content">
-          <div class="dashboard-content">
+      <!-- Breadcrumb -->
+      <app-breadcrumb [items]="breadcrumbItems"></app-breadcrumb>
+
+      <!-- Dashboard Content -->
+      <div class="dashboard-content">
             <h1>Dashboard</h1>
             
             <!-- Loading State -->
@@ -173,30 +135,29 @@ import { ChangeDetectorRef } from '@angular/core';
               </div>
             </div>
           </div>
-        </mat-sidenav-content>
-      </mat-sidenav-container>
-    </div>
+        </div>
+      </div>
   `,
   styles: [`
-    .spacer {
-      flex: 1 1 auto;
-    }
-
     .dashboard-container {
-      height: calc(100vh - 64px);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-color: #f5f5f5;
     }
 
-    .sidenav {
-      width: 250px;
-    }
-
-    .content {
-      padding: 20px;
+    .dashboard-content {
+      flex: 1;
+      padding: 24px;
+      overflow: auto;
+      background: #f5f5f5;
     }
 
     .dashboard-content h1 {
-      margin-bottom: 30px;
+      margin: 0 0 24px 0;
       color: #333;
+      font-size: 28px;
+      font-weight: 500;
     }
 
     .loading-container {
@@ -346,6 +307,10 @@ export class DashboardComponent implements OnInit {
   recentAssets: Asset[] = [];
   loading = false;
   error: string | null = null;
+  
+  breadcrumbItems: BreadcrumbItem[] = [
+    { label: 'Dashboard', icon: 'dashboard' }
+  ];
 
   constructor(
     private authService: AuthService,
@@ -390,5 +355,14 @@ export class DashboardComponent implements OnInit {
 
   logout(): void {
     this.authService.logout();
+  }
+
+  navigateToNewAsset(): void {
+    // Navigation will be handled by router
+    window.location.href = '/assets/new';
+  }
+
+  getStatusClass(status: string): string {
+    return status.toLowerCase();
   }
 } 

@@ -2,22 +2,11 @@ import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestro
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatListModule } from '@angular/material/list';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatTableModule } from '@angular/material/table';
-import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatChipsModule } from '@angular/material/chips';
+import { SharedMaterialModule } from '../../shared/material.module';
+import { HeaderComponent } from '../../shared/header/header.component';
+import { BreadcrumbComponent, BreadcrumbItem } from '../../shared/breadcrumb/breadcrumb.component';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil, startWith, switchMap, catchError, of } from 'rxjs';
 import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
@@ -34,92 +23,58 @@ import { ConfirmDialogComponent, ConfirmDialogData } from '../../components/conf
     RouterModule,
     ReactiveFormsModule,
     FormsModule,
-    MatCardModule,
-    MatButtonModule,
-    MatIconModule,
-    MatToolbarModule,
-    MatSidenavModule,
-    MatListModule,
-    MatMenuModule,
-    MatTableModule,
-    MatPaginatorModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatDialogModule,
-    MatSnackBarModule,
-    MatProgressSpinnerModule,
-    MatChipsModule
+    SharedMaterialModule,
+    HeaderComponent,
+    BreadcrumbComponent
   ],
   template: `
-    <mat-toolbar color="primary">
-      <span>Asset Management System</span>
-      <span class="spacer"></span>
-      <button mat-button [matMenuTriggerFor]="userMenu">
-        {{ currentUser?.firstName }} {{ currentUser?.lastName }}
-        <mat-icon>arrow_drop_down</mat-icon>
-      </button>
-      <mat-menu #userMenu="matMenu">
-        <button mat-menu-item (click)="logout()">
-          <mat-icon>logout</mat-icon>
-          <span>Logout</span>
-        </button>
-      </mat-menu>
-    </mat-toolbar>
-
     <div class="users-container">
-      <mat-sidenav-container>
-        <mat-sidenav mode="side" opened class="sidenav">
-          <mat-nav-list>
-            <a mat-list-item routerLink="/dashboard" routerLinkActive="active">
-              <mat-icon>dashboard</mat-icon>
-              <span>Dashboard</span>
-            </a>
-            <a mat-list-item routerLink="/assets" routerLinkActive="active">
-              <mat-icon>inventory</mat-icon>
-              <span>Assets</span>
-            </a>
-            <a mat-list-item routerLink="/users" routerLinkActive="active" *ngIf="hasRole('Admin')">
-              <mat-icon>people</mat-icon>
-              <span>Users</span>
-            </a>
-            <a mat-list-item routerLink="/reports" routerLinkActive="active">
-              <mat-icon>analytics</mat-icon>
-              <span>Reports</span>
-            </a>
-          </mat-nav-list>
-        </mat-sidenav>
+      <!-- Modern Header -->
+      <app-header 
+        [currentUser]="currentUser"
+        [actionButtonText]="hasRole('Admin') ? 'Add User' : ''"
+        [actionButtonIcon]="'person_add'"
+        (actionClick)="openUserDialog()">
+      </app-header>
 
-        <mat-sidenav-content class="content">
-          <div class="users-content">
-            <div class="header">
-              <h1>User Management</h1>
-              <button mat-raised-button color="primary" (click)="openUserDialog()" *ngIf="hasRole('Admin')">
-                <mat-icon>person_add</mat-icon>
-                Add User
-              </button>
-            </div>
+      <!-- Breadcrumb -->
+      <app-breadcrumb [items]="breadcrumbItems"></app-breadcrumb>
 
-            <div class="filters">
-              <mat-form-field appearance="outline">
-                <mat-label for="user-search">Search Users</mat-label>
-                <input matInput id="user-search" [(ngModel)]="searchTerm" (input)="onSearch()" placeholder="Search by name or email..." aria-label="Search users">
-                <mat-icon matSuffix>search</mat-icon>
-              </mat-form-field>
+      <!-- Users Content -->
+      <div class="users-content">
+        <div class="page-header">
+          <h1>User Management</h1>
+        </div>
 
-              <mat-form-field appearance="outline">
-                <mat-label for="role-filter">Filter by Role</mat-label>
-                <mat-select id="role-filter" [(ngModel)]="selectedRole" (selectionChange)="onRoleFilter()" aria-label="Filter by role">
-                  <mat-option value="">All Roles</mat-option>
-                  <mat-option value="Admin">Admin</mat-option>
-                  <mat-option value="Manager">Manager</mat-option>
-                  <mat-option value="User">User</mat-option>
-                </mat-select>
-              </mat-form-field>
-            </div>
+        <!-- Filters and Actions -->
+        <div class="filters-container">
+          <div class="filter-left">
+            <mat-form-field appearance="outline" class="search-input">
+              <mat-label>Search Users</mat-label>
+              <input matInput [(ngModel)]="searchTerm" (input)="onSearch()" placeholder="Search by name or email...">
+              <mat-icon matSuffix>search</mat-icon>
+            </mat-form-field>
+          </div>
+          
+          <div class="filter-right">
+            <mat-form-field appearance="outline" class="filter-select">
+              <mat-label>Filter by Role</mat-label>
+              <mat-select [(ngModel)]="selectedRole" (selectionChange)="onRoleFilter()">
+                <mat-option value="">All Roles</mat-option>
+                <mat-option value="Admin">Admin</mat-option>
+                <mat-option value="Manager">Manager</mat-option>
+                <mat-option value="User">User</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <button mat-icon-button matTooltip="Refresh" (click)="loadUsers()">
+              <mat-icon>refresh</mat-icon>
+            </button>
+          </div>
+        </div>
 
-            <div class="users-table-container">
-              <table mat-table [dataSource]="users" class="users-table">
+                    <!-- Users Table -->
+        <div class="table-container" *ngIf="!loading; else loadingTemplate">
+          <table mat-table [dataSource]="users" class="users-table">
                 <!-- Name Column -->
                 <ng-container matColumnDef="name">
                   <th mat-header-cell *matHeaderCellDef>Name</th>
@@ -192,75 +147,108 @@ import { ConfirmDialogComponent, ConfirmDialogData } from '../../components/conf
                   </td>
                 </ng-container>
 
-                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-              </table>
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          </table>
 
-              <div *ngIf="loading" class="loading-container">
-                <mat-spinner diameter="40"></mat-spinner>
-                <p>Loading users...</p>
-              </div>
-
-              <div *ngIf="!loading && users.length === 0" class="no-users">
-                <mat-icon>people_outline</mat-icon>
-                <h3>No users found</h3>
-                <p>Try adjusting your search criteria or add a new user.</p>
-              </div>
-            </div>
+          <!-- No Data Template -->
+          <div *ngIf="users.length === 0" class="no-data">
+            <mat-icon class="no-data-icon">people_outline</mat-icon>
+            <h3>No users found</h3>
+            <p>{{ searchTerm ? 'No users match your search criteria.' : 'No users have been added yet.' }}</p>
+            <button mat-raised-button color="primary" (click)="openUserDialog()" *ngIf="!searchTerm && hasRole('Admin')">
+              <mat-icon>person_add</mat-icon>
+              Add First User
+            </button>
           </div>
-        </mat-sidenav-content>
-      </mat-sidenav-container>
+        </div>
+
+        <!-- Loading Template -->
+        <ng-template #loadingTemplate>
+          <div class="loading-container">
+            <mat-progress-spinner mode="indeterminate" diameter="60"></mat-progress-spinner>
+            <p>Loading users...</p>
+          </div>
+        </ng-template>
+      </div>
     </div>
   `,
   styles: [`
-    .spacer {
-      flex: 1 1 auto;
-    }
-
     .users-container {
-      height: calc(100vh - 64px);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-color: #f5f5f5;
     }
 
-    .sidenav {
-      width: 250px;
+    .users-content {
+      flex: 1;
+      padding: 24px;
+      overflow: auto;
+      background: #f5f5f5;
     }
 
-    .content {
-      padding: 20px;
+    .page-header h1 {
+      margin: 0 0 24px 0;
+      color: #333;
+      font-size: 28px;
+      font-weight: 500;
     }
 
-    .header {
+    /* Filters */
+    .filters-container {
+      background: white;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 30px;
     }
 
-    .header h1 {
-      margin: 0;
-      color: #333;
-    }
-
-    .filters {
+    .filter-left {
       display: flex;
-      gap: 20px;
-      margin-bottom: 30px;
-      flex-wrap: wrap;
+      align-items: center;
+      gap: 16px;
     }
 
-    .filters mat-form-field {
-      min-width: 200px;
+    .filter-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    .users-table-container {
+    .search-input {
+      width: 300px;
+    }
+
+    .filter-select {
+      width: 160px;
+    }
+
+    /* Table */
+    .table-container {
       background: white;
       border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      overflow: auto;
     }
 
     .users-table {
       width: 100%;
+      background: white;
+    }
+
+    .users-table th {
+      background-color: #f8f9fa;
+      font-weight: 600;
+      color: #495057;
+      border-bottom: 2px solid #dee2e6;
+    }
+
+    .users-table tr:hover {
+      background-color: #f8f9fa;
     }
 
     .user-info {
@@ -383,6 +371,10 @@ export class UsersComponent implements OnInit, OnDestroy {
   selectedRole = '';
   displayedColumns: string[] = ['name', 'role', 'status', 'createdAt', 'actions'];
   private destroy$ = new Subject<void>();
+  
+  breadcrumbItems: BreadcrumbItem[] = [
+    { label: 'Users', icon: 'people' }
+  ];
 
   constructor(
     private userService: UserService,
