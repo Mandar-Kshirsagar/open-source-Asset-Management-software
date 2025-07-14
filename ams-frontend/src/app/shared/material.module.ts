@@ -17,6 +17,7 @@ import { MatMenuModule } from '@angular/material/menu';
 // Table and pagination modules
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatSortModule } from '@angular/material/sort';
 
 // Dialog and overlay modules
 import { MatDialogModule } from '@angular/material/dialog';
@@ -61,6 +62,7 @@ const MATERIAL_MODULES = [
   // Data display
   MatTableModule,
   MatPaginatorModule,
+  MatSortModule,
   MatChipsModule,
   MatDividerModule,
   
