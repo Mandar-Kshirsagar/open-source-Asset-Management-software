@@ -65,8 +65,8 @@ import { User } from '../../models/user.model';
         <button mat-raised-button color="accent" [matMenuTriggerFor]="createMenu" class="create-button">
           <mat-icon>add</mat-icon>
           New
-          <mat-icon>arrow_drop_down</mat-icon>
-        </button>
+        <mat-icon>arrow_drop_down</mat-icon>
+      </button>
         <mat-menu #createMenu="matMenu">
           <button mat-menu-item routerLink="/assets/new">
             <mat-icon>devices</mat-icon>
@@ -85,24 +85,24 @@ import { User } from '../../models/user.model';
         <button mat-icon-button [matMenuTriggerFor]="userMenu" class="user-avatar">
           <mat-icon>account_circle</mat-icon>
         </button>
-        <mat-menu #userMenu="matMenu">
+      <mat-menu #userMenu="matMenu">
           <button mat-menu-item>
             <mat-icon>person</mat-icon>
             Profile
           </button>
-          <button mat-menu-item (click)="logout()">
-            <mat-icon>logout</mat-icon>
+        <button mat-menu-item (click)="logout()">
+          <mat-icon>logout</mat-icon>
             Logout
-          </button>
-        </mat-menu>
-      </mat-toolbar>
+        </button>
+      </mat-menu>
+    </mat-toolbar>
       <!-- Removed Demo Mode Banner for cleaner UI -->
 
       <!-- Breadcrumb -->
       <div class="breadcrumb">
         <mat-icon>home</mat-icon>
         <span class="breadcrumb-separator">></span>
-        <span>Assets</span>
+              <span>Assets</span>
       </div>
 
       <!-- Filters and Actions -->
@@ -118,14 +118,14 @@ import { User } from '../../models/user.model';
             </mat-select>
           </mat-form-field>
           <button mat-raised-button color="primary" class="go-button" (click)="executeAction()">Go</button>
-        </div>
-        
+            </div>
+
         <div class="filter-right">
           <mat-form-field appearance="outline" class="search-input">
             <mat-label>Search</mat-label>
             <input matInput [(ngModel)]="searchTerm" (input)="onSearch()">
-            <mat-icon matSuffix>search</mat-icon>
-          </mat-form-field>
+                <mat-icon matSuffix>search</mat-icon>
+              </mat-form-field>
           <button mat-icon-button matTooltip="Clear Search" (click)="clearSearch()">
             <mat-icon>clear</mat-icon>
           </button>
@@ -164,7 +164,7 @@ import { User } from '../../models/user.model';
           </mat-form-field>
           rows per page
         </span>
-      </div>
+            </div>
 
       <!-- Assets Table -->
       <div class="table-container" *ngIf="!loading; else loadingTemplate">
@@ -305,10 +305,10 @@ import { User } from '../../models/user.model';
                 <button mat-menu-item (click)="checkOut(asset)">
                   <mat-icon>output</mat-icon>
                   Check Out
-                </button>
+                      </button>
               </mat-menu>
             </td>
-          </ng-container>
+              </ng-container>
 
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
           <tr mat-row *matRowDef="let asset; columns: displayedColumns;" 
@@ -326,7 +326,7 @@ import { User } from '../../models/user.model';
             Add First Asset
           </button>
         </div>
-      </div>
+            </div>
 
       <!-- Pagination -->
       <mat-paginator #paginator
@@ -343,14 +343,14 @@ import { User } from '../../models/user.model';
         <div class="loading-container">
           <mat-progress-spinner mode="indeterminate" diameter="60"></mat-progress-spinner>
           <p>Loading assets...</p>
-        </div>
+            </div>
       </ng-template>
 
       <!-- Error Message -->
       <div class="error-message" *ngIf="error">
         <mat-icon color="warn">error</mat-icon>
         <span>{{ error }}</span>
-      </div>
+          </div>
     </div>
   `,
   styles: [`
