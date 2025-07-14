@@ -1,13 +1,16 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { ScrollingModule } from '@angular/cdk/scrolling';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil, startWith, switchMap, catchError, of } from 'rxjs';
-import { MatSnackBar } from '@angular/material/snack-bar';
 
-// Import shared Material module instead of individual modules
+// Import shared Material module and required Material types
 import { SharedMaterialModule } from '../../shared/material.module';
+import { MatTableDataSource } from '@angular/material/table';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatSort } from '@angular/material/sort';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { SelectionModel } from '@angular/cdk/collections';
 
 import { AssetService } from '../../services/asset.service';
 import { AuthService } from '../../services/auth.service';
@@ -23,22 +26,71 @@ import { User } from '../../models/user.model';
     RouterModule,
     ReactiveFormsModule,
     FormsModule,
-    SharedMaterialModule,
-    ScrollingModule
+    SharedMaterialModule
   ],
   template: `
     <div class="assets-container">
+      <!-- Header Toolbar -->
       <mat-toolbar color="primary" class="assets-toolbar">
-        <span>Assets Management</span>
+        <mat-icon class="snipe-logo">inventory</mat-icon>
+        <span class="app-title">SNIPE-IT</span>
+        <span class="subtitle">ASSET MANAGEMENT</span>
         <span class="toolbar-spacer"></span>
-        <button mat-raised-button color="accent" routerLink="/assets/new" *ngIf="hasRole('Admin')">
+        
+        <!-- Top Navigation Icons -->
+        <button mat-icon-button matTooltip="List View">
+          <mat-icon>view_list</mat-icon>
+        </button>
+        <button mat-icon-button matTooltip="Card View">
+          <mat-icon>view_module</mat-icon>
+        </button>
+        <button mat-icon-button matTooltip="Reports">
+          <mat-icon>assessment</mat-icon>
+        </button>
+        <button mat-icon-button matTooltip="Location">
+          <mat-icon>location_on</mat-icon>
+        </button>
+        <button mat-icon-button matTooltip="Settings">
+          <mat-icon>settings</mat-icon>
+        </button>
+        
+        <!-- Search Bar -->
+        <mat-form-field class="header-search" appearance="outline">
+          <mat-label>Lookup by Asset Tag</mat-label>
+          <input matInput [(ngModel)]="searchTerm" (input)="onSearch()" placeholder="Search...">
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+        
+        <!-- Create New Button -->
+        <button mat-raised-button color="accent" [matMenuTriggerFor]="createMenu" class="create-button">
           <mat-icon>add</mat-icon>
-          Add Asset
+          Create New
+          <mat-icon>arrow_drop_down</mat-icon>
         </button>
-        <button mat-icon-button [matMenuTriggerFor]="menu">
-          <mat-icon>more_vert</mat-icon>
+        <mat-menu #createMenu="matMenu">
+          <button mat-menu-item routerLink="/assets/new">
+            <mat-icon>devices</mat-icon>
+            Asset
+          </button>
+          <button mat-menu-item>
+            <mat-icon>person</mat-icon>
+            User
+          </button>
+          <button mat-menu-item>
+            <mat-icon>location_on</mat-icon>
+            Location
+          </button>
+        </mat-menu>
+        
+        <!-- User Menu -->
+        <button mat-icon-button [matMenuTriggerFor]="userMenu" class="user-avatar">
+          <mat-icon>account_circle</mat-icon>
         </button>
-        <mat-menu #menu="matMenu">
+        <mat-menu #userMenu="matMenu">
+          <button mat-menu-item>
+            <mat-icon>person</mat-icon>
+            Profile
+          </button>
           <button mat-menu-item (click)="logout()">
             <mat-icon>logout</mat-icon>
             Logout
@@ -46,79 +98,253 @@ import { User } from '../../models/user.model';
         </mat-menu>
       </mat-toolbar>
 
-      <div class="search-container">
-        <mat-form-field class="search-field" appearance="outline">
-          <mat-label>Search assets...</mat-label>
-          <input matInput 
-                 [(ngModel)]="searchTerm" 
-                 (input)="onSearch()"
-                 placeholder="Search by name, category, or ID">
-          <mat-icon matSuffix>search</mat-icon>
-        </mat-form-field>
+      <!-- Demo Mode Banner -->
+      <div class="demo-banner">
+        <mat-icon>info</mat-icon>
+        DEMO MODE: Some features are disabled for this installation.
       </div>
 
-      <div class="assets-content" *ngIf="!loading; else loadingTemplate">
-        <div class="assets-grid" *ngIf="assets.length > 0; else noAssetsTemplate">
-          <cdk-virtual-scroll-viewport itemSize="220" class="assets-viewport">
-            <mat-card *cdkVirtualFor="let asset of assets; trackBy: trackByAssetId" 
-                      class="asset-card performance-optimized">
-              <mat-card-header>
-                <mat-card-title>{{ asset.name }}</mat-card-title>
-                <mat-card-subtitle>ID: {{ asset.id }}</mat-card-subtitle>
-              </mat-card-header>
-              
-              <mat-card-content>
-                <div class="asset-info">
-                  <p><strong>Category:</strong> {{ asset.category }}</p>
-                  <p><strong>Status:</strong> 
-                    <mat-chip [color]="getStatusColor(asset.status)" selected>
-                      {{ asset.status }}
-                    </mat-chip>
-                  </p>
-                  <p><strong>Location:</strong> {{ asset.location }}</p>
-                  <p><strong>Purchase Date:</strong> {{ asset.purchaseDate | date }}</p>
-                  <p><strong>Purchase Price:</strong> {{ asset.purchasePrice | currency }}</p>
-                </div>
-              </mat-card-content>
-              
-              <mat-card-actions align="end">
-                <button mat-button color="primary" [routerLink]="['/assets', asset.id]">
+      <!-- Breadcrumb -->
+      <div class="breadcrumb">
+        <mat-icon>home</mat-icon>
+        <span class="breadcrumb-separator">></span>
+        <span>Assets</span>
+      </div>
+
+      <!-- Filters and Actions -->
+      <div class="filters-container">
+        <div class="filter-left">
+          <mat-form-field appearance="outline" class="filter-select">
+            <mat-label>Edit</mat-label>
+            <mat-select [(value)]="selectedAction">
+              <mat-option value="">Select Action</mat-option>
+              <mat-option value="edit">Edit</mat-option>
+              <mat-option value="delete">Delete</mat-option>
+              <mat-option value="assign">Assign</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <button mat-raised-button color="primary" class="go-button" (click)="executeAction()">Go</button>
+        </div>
+        
+        <div class="filter-right">
+          <mat-form-field appearance="outline" class="search-input">
+            <mat-label>Search</mat-label>
+            <input matInput [(ngModel)]="searchTerm" (input)="onSearch()">
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+          <button mat-icon-button matTooltip="Clear Search" (click)="clearSearch()">
+            <mat-icon>clear</mat-icon>
+          </button>
+          <button mat-icon-button matTooltip="Refresh" (click)="loadAssets()">
+            <mat-icon>refresh</mat-icon>
+          </button>
+          <button mat-icon-button matTooltip="Export" [matMenuTriggerFor]="exportMenu">
+            <mat-icon>download</mat-icon>
+          </button>
+          <mat-menu #exportMenu="matMenu">
+            <button mat-menu-item (click)="exportToCSV()">
+              <mat-icon>file_download</mat-icon>
+              Export to CSV
+            </button>
+            <button mat-menu-item (click)="exportToPDF()">
+              <mat-icon>picture_as_pdf</mat-icon>
+              Export to PDF
+            </button>
+          </mat-menu>
+          <button mat-icon-button matTooltip="Column Settings">
+            <mat-icon>view_column</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- Results Info -->
+      <div class="results-info" *ngIf="!loading">
+        Showing {{ getDisplayRange() }} of {{ totalAssets }} rows
+        <span class="pagination-controls">
+          <mat-form-field appearance="outline" class="page-size-select">
+            <mat-select [(value)]="pageSize" (selectionChange)="onPageSizeChange()">
+              <mat-option value="20">20</mat-option>
+              <mat-option value="50">50</mat-option>
+              <mat-option value="100">100</mat-option>
+            </mat-select>
+          </mat-form-field>
+          rows per page
+        </span>
+      </div>
+
+      <!-- Assets Table -->
+      <div class="table-container" *ngIf="!loading; else loadingTemplate">
+        <table mat-table [dataSource]="dataSource" matSort class="assets-table">
+          
+          <!-- Checkbox Column -->
+          <ng-container matColumnDef="select">
+            <th mat-header-cell *matHeaderCellDef>
+              <mat-checkbox (change)="$event ? masterToggle() : null"
+                          [checked]="selection.hasValue() && isAllSelected()"
+                          [indeterminate]="selection.hasValue() && !isAllSelected()">
+              </mat-checkbox>
+            </th>
+            <td mat-cell *matCellDef="let asset">
+              <mat-checkbox (click)="$event.stopPropagation()"
+                          (change)="$event ? selection.toggle(asset) : null"
+                          [checked]="selection.isSelected(asset)">
+              </mat-checkbox>
+            </td>
+          </ng-container>
+
+          <!-- Asset Name Column -->
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Asset Name</th>
+            <td mat-cell *matCellDef="let asset">
+              <a [routerLink]="['/assets', asset.id]" class="asset-link">{{ asset.name }}</a>
+            </td>
+          </ng-container>
+
+          <!-- Device Image Column -->
+          <ng-container matColumnDef="image">
+            <th mat-header-cell *matHeaderCellDef>Device Image</th>
+            <td mat-cell *matCellDef="let asset">
+              <div class="device-image">
+                <mat-icon class="device-icon">laptop</mat-icon>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Asset Tag Column -->
+          <ng-container matColumnDef="assetTag">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Asset Tag</th>
+            <td mat-cell *matCellDef="let asset">{{ asset.assetTag }}</td>
+          </ng-container>
+
+          <!-- Serial Column -->
+          <ng-container matColumnDef="serialNumber">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Serial</th>
+            <td mat-cell *matCellDef="let asset">{{ asset.serialNumber }}</td>
+          </ng-container>
+
+          <!-- Model Column -->
+          <ng-container matColumnDef="model">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Model</th>
+            <td mat-cell *matCellDef="let asset">{{ asset.model }}</td>
+          </ng-container>
+
+          <!-- Category Column -->
+          <ng-container matColumnDef="category">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Category</th>
+            <td mat-cell *matCellDef="let asset">{{ asset.category }}</td>
+          </ng-container>
+
+          <!-- Status Column -->
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+            <td mat-cell *matCellDef="let asset">
+              <mat-chip [ngClass]="getStatusClass(asset.status)" class="status-chip">
+                <mat-icon class="status-icon">{{ getStatusIcon(asset.status) }}</mat-icon>
+                {{ asset.status }}
+              </mat-chip>
+            </td>
+          </ng-container>
+
+          <!-- Checked Out To Column -->
+          <ng-container matColumnDef="assignedTo">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Checked Out To</th>
+            <td mat-cell *matCellDef="let asset">
+              <div *ngIf="asset.assignedToUser" class="assigned-user">
+                <mat-icon class="user-icon">person</mat-icon>
+                {{ asset.assignedToUser.firstName }} {{ asset.assignedToUser.lastName }}
+              </div>
+              <span *ngIf="!asset.assignedToUser" class="no-assignment">-</span>
+            </td>
+          </ng-container>
+
+          <!-- Location Column -->
+          <ng-container matColumnDef="location">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Location</th>
+            <td mat-cell *matCellDef="let asset">{{ asset.location }}</td>
+          </ng-container>
+
+          <!-- Purchase Cost Column -->
+          <ng-container matColumnDef="purchasePrice">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Purchase Cost</th>
+            <td mat-cell *matCellDef="let asset">{{ asset.purchasePrice | currency }}</td>
+          </ng-container>
+
+          <!-- Current Value Column -->
+          <ng-container matColumnDef="currentValue">
+            <th mat-header-cell *matHeaderCellDef>Current Value</th>
+            <td mat-cell *matCellDef="let asset">{{ asset.purchasePrice | currency }}</td>
+          </ng-container>
+
+          <!-- Change Column -->
+          <ng-container matColumnDef="change">
+            <th mat-header-cell *matHeaderCellDef>Change</th>
+            <td mat-cell *matCellDef="let asset">
+              <span class="change-indicator">-</span>
+            </td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let asset">
+              <button mat-icon-button [matMenuTriggerFor]="actionMenu" class="action-button">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #actionMenu="matMenu">
+                <button mat-menu-item [routerLink]="['/assets', asset.id]">
                   <mat-icon>visibility</mat-icon>
                   View
                 </button>
-                <button mat-button color="accent" [routerLink]="['/assets', asset.id, 'edit']" *ngIf="hasRole('Admin')">
+                <button mat-menu-item [routerLink]="['/assets', asset.id, 'edit']">
                   <mat-icon>edit</mat-icon>
                   Edit
                 </button>
-                <button mat-button color="warn" 
-                        (click)="deleteAsset(asset)" 
-                        [disabled]="deletingAssetId === asset.id"
-                        *ngIf="hasRole('Admin')">
-                  <mat-progress-spinner *ngIf="deletingAssetId === asset.id" 
-                                      diameter="20" 
-                                      mode="indeterminate">
-                  </mat-progress-spinner>
-                  <mat-icon *ngIf="deletingAssetId !== asset.id">delete</mat-icon>
+                <button mat-menu-item (click)="deleteAsset(asset)">
+                  <mat-icon>delete</mat-icon>
                   Delete
                 </button>
-              </mat-card-actions>
-            </mat-card>
-          </cdk-virtual-scroll-viewport>
-        </div>
+                <mat-divider></mat-divider>
+                <button mat-menu-item (click)="assignAsset(asset)">
+                  <mat-icon>person_add</mat-icon>
+                  Assign
+                </button>
+                <button mat-menu-item (click)="checkOut(asset)">
+                  <mat-icon>output</mat-icon>
+                  Check Out
+                </button>
+              </mat-menu>
+            </td>
+          </ng-container>
 
-        <ng-template #noAssetsTemplate>
-          <div class="no-assets">
-            <mat-icon class="no-assets-icon">inventory_2</mat-icon>
-            <h2>No assets found</h2>
-            <p>{{ searchTerm ? 'No assets match your search criteria.' : 'No assets have been added yet.' }}</p>
-            <button mat-raised-button color="primary" routerLink="/assets/new" *ngIf="hasRole('Admin') && !searchTerm">
-              <mat-icon>add</mat-icon>
-              Add First Asset
-            </button>
-          </div>
-        </ng-template>
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let asset; columns: displayedColumns;" 
+              [class.selected-row]="selection.isSelected(asset)"
+              (click)="rowClicked(asset)"></tr>
+        </table>
+
+        <!-- No Data Template -->
+        <div *ngIf="dataSource.data.length === 0" class="no-data">
+          <mat-icon class="no-data-icon">inventory_2</mat-icon>
+          <h3>No assets found</h3>
+          <p>{{ searchTerm ? 'No assets match your search criteria.' : 'No assets have been added yet.' }}</p>
+          <button mat-raised-button color="primary" routerLink="/assets/new" *ngIf="!searchTerm">
+            <mat-icon>add</mat-icon>
+            Add First Asset
+          </button>
+        </div>
       </div>
 
+      <!-- Pagination -->
+      <mat-paginator #paginator
+                     [length]="totalAssets"
+                     [pageSize]="pageSize"
+                     [pageSizeOptions]="[20, 50, 100]"
+                     [showFirstLastButtons]="true"
+                     (page)="onPageChange($event)"
+                     class="assets-paginator">
+      </mat-paginator>
+
+      <!-- Loading Template -->
       <ng-template #loadingTemplate>
         <div class="loading-container">
           <mat-progress-spinner mode="indeterminate" diameter="60"></mat-progress-spinner>
@@ -126,6 +352,7 @@ import { User } from '../../models/user.model';
         </div>
       </ng-template>
 
+      <!-- Error Message -->
       <div class="error-message" *ngIf="error">
         <mat-icon color="warn">error</mat-icon>
         <span>{{ error }}</span>
@@ -134,97 +361,361 @@ import { User } from '../../models/user.model';
   `,
   styles: [`
     .assets-container {
-      contain: layout style paint;
       height: 100vh;
       display: flex;
       flex-direction: column;
+      background-color: #f5f5f5;
     }
 
+    /* Header Toolbar */
     .assets-toolbar {
-      flex-shrink: 0;
+      background: linear-gradient(135deg, #3f51b5 0%, #5c6bc0 100%);
+      padding: 0 16px;
+      min-height: 64px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .snipe-logo {
+      font-size: 28px;
+      margin-right: 8px;
+      color: #ff6b35;
+    }
+
+    .app-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-right: 8px;
+    }
+
+    .subtitle {
+      font-size: 12px;
+      opacity: 0.8;
+      margin-right: auto;
     }
 
     .toolbar-spacer {
       flex: 1;
     }
 
-    .search-container {
-      padding: 1rem;
-      flex-shrink: 0;
+    .header-search {
+      margin: 0 16px;
+      width: 200px;
     }
 
-    .search-field {
-      width: 100%;
-      max-width: 400px;
+    .header-search ::ng-deep .mat-mdc-form-field-bottom-align::before {
+      display: none;
     }
 
-    .assets-content {
+    .header-search ::ng-deep .mat-mdc-text-field-wrapper {
+      background-color: rgba(255,255,255,0.1);
+    }
+
+    .create-button {
+      margin-left: 16px;
+      background-color: #4caf50 !important;
+      color: white !important;
+    }
+
+    .user-avatar {
+      margin-left: 16px;
+    }
+
+    /* Demo Banner */
+    .demo-banner {
+      background: linear-gradient(135deg, #00bcd4 0%, #26c6da 100%);
+      color: white;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      font-weight: 500;
+    }
+
+    .demo-banner mat-icon {
+      margin-right: 8px;
+    }
+
+    /* Breadcrumb */
+    .breadcrumb {
+      padding: 16px;
+      background: white;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .breadcrumb mat-icon {
+      margin-right: 8px;
+      font-size: 18px;
+    }
+
+    .breadcrumb-separator {
+      margin: 0 8px;
+    }
+
+    /* Filters */
+    .filters-container {
+      background: white;
+      padding: 16px;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .filter-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .filter-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-select {
+      width: 120px;
+    }
+
+    .go-button {
+      height: 40px;
+      background-color: #6c9bd2;
+      color: white;
+    }
+
+    .search-input {
+      width: 200px;
+    }
+
+    /* Results Info */
+    .results-info {
+      background: white;
+      padding: 8px 16px;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .pagination-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .page-size-select {
+      width: 60px;
+    }
+
+    /* Table */
+    .table-container {
       flex: 1;
-      overflow: hidden;
+      overflow: auto;
+      background: white;
     }
 
-    .assets-viewport {
-      height: 100%;
-      will-change: scroll-position;
+    .assets-table {
+      width: 100%;
+      background: white;
     }
 
-    .assets-grid {
-      height: 100%;
-      padding: 0 1rem;
+    .assets-table th {
+      background-color: #f8f9fa;
+      font-weight: 600;
+      color: #495057;
+      border-bottom: 2px solid #dee2e6;
     }
 
-    .asset-card {
-      margin-bottom: 1rem;
-      transition: transform 0.2s ease-in-out;
-      contain: layout style paint;
+    .assets-table tr:hover {
+      background-color: #f8f9fa;
     }
 
-    .asset-card:hover {
-      transform: translateY(-2px);
+    .selected-row {
+      background-color: #e3f2fd !important;
     }
 
-    .asset-info p {
-      margin: 0.5rem 0;
+    .asset-link {
+      color: #3f51b5;
+      text-decoration: none;
+      font-weight: 500;
     }
 
-    .no-assets, .loading-container {
+    .asset-link:hover {
+      text-decoration: underline;
+    }
+
+    .device-image {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .device-icon {
+      color: #666;
+      font-size: 24px;
+    }
+
+    .status-chip {
+      display: flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .status-chip.ready {
+      background-color: #e8f5e8;
+      color: #2e7d32;
+    }
+
+    .status-chip.deployed {
+      background-color: #e3f2fd;
+      color: #1976d2;
+    }
+
+    .status-chip.maintenance {
+      background-color: #fff3e0;
+      color: #f57c00;
+    }
+
+    .status-chip.retired {
+      background-color: #ffebee;
+      color: #d32f2f;
+    }
+
+    .status-icon {
+      font-size: 14px;
+      margin-right: 4px;
+    }
+
+    .assigned-user {
+      display: flex;
+      align-items: center;
+    }
+
+    .user-icon {
+      margin-right: 4px;
+      font-size: 16px;
+      color: #666;
+    }
+
+    .no-assignment {
+      color: #999;
+    }
+
+    .change-indicator {
+      color: #999;
+    }
+
+    .action-button {
+      opacity: 0.7;
+    }
+
+    .action-button:hover {
+      opacity: 1;
+    }
+
+    /* No Data */
+    .no-data {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 100%;
+      padding: 64px;
       text-align: center;
+      color: #666;
     }
 
-    .no-assets-icon {
-      font-size: 4rem;
-      width: 4rem;
-      height: 4rem;
+    .no-data-icon {
+      font-size: 64px;
       color: #ccc;
-      margin-bottom: 1rem;
+      margin-bottom: 16px;
     }
 
+    /* Loading */
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 300px;
+      color: #666;
+    }
+
+    /* Error */
     .error-message {
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 1rem;
+      padding: 16px;
       color: #f44336;
+      background: #ffebee;
+      border: 1px solid #ffcdd2;
+      margin: 16px;
+      border-radius: 4px;
     }
 
     .error-message mat-icon {
-      margin-right: 0.5rem;
+      margin-right: 8px;
+    }
+
+    /* Paginator */
+    .assets-paginator {
+      background: white;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header-search {
+        display: none;
+      }
+      
+      .filter-right {
+        flex-wrap: wrap;
+      }
+      
+      .results-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
     }
   `]
 })
 export class AssetsComponent implements OnInit, OnDestroy {
-  currentUser: User | null = null;
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatSort) sort!: MatSort;
+
+  // Data and state
+  dataSource = new MatTableDataSource<Asset>([]);
   assets: Asset[] = [];
-  searchTerm = '';
+  totalAssets = 0;
   loading = false;
   error = '';
-  deletingAssetId: number | null = null;
-  isAdmin = false; // Cache admin role check
+  
+  // Search and filters
+  searchTerm = '';
+  selectedAction = '';
+  pageSize = 20;
+  currentPage = 0;
+  
+  // Selection
+  selection = new SelectionModel<Asset>(true, []);
+  
+  // Table configuration
+  displayedColumns: string[] = [
+    'select', 'name', 'image', 'assetTag', 'serialNumber', 'model', 
+    'category', 'status', 'assignedTo', 'location', 'purchasePrice', 
+    'currentValue', 'change', 'actions'
+  ];
+  
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
 
@@ -234,30 +725,13 @@ export class AssetsComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar,
     private cdr: ChangeDetectorRef
   ) {
-    // Initialize search with debouncing for better performance
+    // Setup search debouncing
     this.searchSubject.pipe(
       debounceTime(300),
       distinctUntilChanged(),
-      switchMap(term => {
-        this.loading = true;
-        this.cdr.markForCheck();
-        return this.assetService.getAllAssets({ 
-          searchTerm: term.trim() || undefined,
-          page: 1,
-          pageSize: 50
-        }).pipe(
-          catchError(err => {
-            this.error = 'Failed to search assets';
-            this.snackBar.open('Failed to search assets', 'Close', { duration: 3000 });
-            return of([]);
-          })
-        );
-      }),
       takeUntil(this.destroy$)
-    ).subscribe((assets: Asset[]) => {
-      this.assets = assets;
-      this.loading = false;
-      this.cdr.markForCheck();
+    ).subscribe(() => {
+      this.loadAssets();
     });
   }
 
@@ -272,9 +746,16 @@ export class AssetsComponent implements OnInit, OnDestroy {
 
   loadAssets(): void {
     this.loading = true;
+    this.error = '';
     this.cdr.markForCheck();
     
-    this.assetService.getAllAssets().pipe(
+    const filter = {
+      searchTerm: this.searchTerm || undefined,
+      page: this.currentPage + 1,
+      pageSize: this.pageSize
+    };
+    
+    this.assetService.getAllAssets(filter).pipe(
       takeUntil(this.destroy$),
       catchError(err => {
         this.error = 'Failed to load assets';
@@ -283,6 +764,8 @@ export class AssetsComponent implements OnInit, OnDestroy {
       })
     ).subscribe((assets: Asset[]) => {
       this.assets = assets;
+      this.dataSource.data = assets;
+      this.totalAssets = assets.length; // In real app, this should come from API
       this.loading = false;
       this.cdr.markForCheck();
     });
@@ -292,19 +775,65 @@ export class AssetsComponent implements OnInit, OnDestroy {
     this.searchSubject.next(this.searchTerm);
   }
 
-  hasRole(role: string): boolean {
-    return this.authService.hasRole(role);
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.onSearch();
   }
 
-  logout(): void {
-    this.authService.logout();
+  onPageChange(event: any): void {
+    this.currentPage = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadAssets();
+  }
+
+  onPageSizeChange(): void {
+    this.currentPage = 0;
+    this.loadAssets();
+  }
+
+  // Selection methods
+  isAllSelected(): boolean {
+    const numSelected = this.selection.selected.length;
+    const numRows = this.dataSource.data.length;
+    return numSelected === numRows;
+  }
+
+  masterToggle(): void {
+    this.isAllSelected() 
+      ? this.selection.clear()
+      : this.dataSource.data.forEach(row => this.selection.select(row));
+  }
+
+  rowClicked(asset: Asset): void {
+    this.selection.toggle(asset);
+  }
+
+  // Action methods
+  executeAction(): void {
+    if (!this.selectedAction || this.selection.selected.length === 0) {
+      this.snackBar.open('Please select an action and assets', 'Close', { duration: 3000 });
+      return;
+    }
+
+    const selectedAssets = this.selection.selected;
+    
+    switch (this.selectedAction) {
+      case 'edit':
+        // Handle bulk edit
+        this.snackBar.open(`Editing ${selectedAssets.length} assets`, 'Close', { duration: 3000 });
+        break;
+      case 'delete':
+        this.bulkDelete(selectedAssets);
+        break;
+      case 'assign':
+        // Handle bulk assignment
+        this.snackBar.open(`Assigning ${selectedAssets.length} assets`, 'Close', { duration: 3000 });
+        break;
+    }
   }
 
   deleteAsset(asset: Asset): void {
     if (confirm(`Are you sure you want to delete ${asset.name}?`)) {
-      this.deletingAssetId = asset.id;
-      this.cdr.markForCheck();
-      
       this.assetService.deleteAsset(asset.id).pipe(
         takeUntil(this.destroy$),
         catchError(err => {
@@ -312,23 +841,79 @@ export class AssetsComponent implements OnInit, OnDestroy {
           return of(null);
         })
       ).subscribe(() => {
-        this.deletingAssetId = null;
-        this.loadAssets();
         this.snackBar.open('Asset deleted successfully', 'Close', { duration: 3000 });
+        this.loadAssets();
       });
     }
   }
 
-  trackByAssetId(index: number, asset: Asset): number {
-    return asset.id;
+  bulkDelete(assets: Asset[]): void {
+    if (confirm(`Are you sure you want to delete ${assets.length} assets?`)) {
+      // Handle bulk delete
+      this.snackBar.open(`Deleting ${assets.length} assets`, 'Close', { duration: 3000 });
+      this.selection.clear();
+    }
   }
 
-  getStatusColor(status: string): string {
+  assignAsset(asset: Asset): void {
+    // Handle asset assignment
+    this.snackBar.open('Assignment functionality to be implemented', 'Close', { duration: 3000 });
+  }
+
+  checkOut(asset: Asset): void {
+    // Handle asset checkout
+    this.snackBar.open('Check out functionality to be implemented', 'Close', { duration: 3000 });
+  }
+
+  // Export methods
+  exportToCSV(): void {
+    this.snackBar.open('Exporting to CSV...', 'Close', { duration: 2000 });
+  }
+
+  exportToPDF(): void {
+    this.snackBar.open('Exporting to PDF...', 'Close', { duration: 2000 });
+  }
+
+  // Helper methods
+  getStatusClass(status: string): string {
     switch (status.toLowerCase()) {
-      case 'active': return 'primary';
-      case 'maintenance': return 'accent';
-      case 'retired': return 'warn';
-      default: return '';
+      case 'ready to deploy':
+      case 'active':
+        return 'ready';
+      case 'deployed':
+        return 'deployed';
+      case 'maintenance':
+        return 'maintenance';
+      case 'retired':
+        return 'retired';
+      default:
+        return 'ready';
     }
+  }
+
+  getStatusIcon(status: string): string {
+    switch (status.toLowerCase()) {
+      case 'ready to deploy':
+      case 'active':
+        return 'check_circle';
+      case 'deployed':
+        return 'person';
+      case 'maintenance':
+        return 'build';
+      case 'retired':
+        return 'archive';
+      default:
+        return 'help';
+    }
+  }
+
+  getDisplayRange(): string {
+    const start = this.currentPage * this.pageSize + 1;
+    const end = Math.min((this.currentPage + 1) * this.pageSize, this.totalAssets);
+    return `${start} to ${end}`;
+  }
+
+  logout(): void {
+    this.authService.logout();
   }
 } 
