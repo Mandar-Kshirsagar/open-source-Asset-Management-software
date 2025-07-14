@@ -5,6 +5,9 @@
     "ng": "ng",
     "start": "ng serve --proxy-config proxy.conf.json",
     "build": "ng build",
+    "build:stats": "ng build --stats-json",
+    "analyze": "npm run build:stats && npx webpack-bundle-analyzer dist/ams-frontend/stats.json",
+    "build:prod": "ng build --configuration production",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:ams-frontend": "node dist/ams-frontend/server/server.mjs"
@@ -21,8 +24,8 @@
   },
   "private": true,
   "dependencies": {
-    "@angular/cdk": "^20.1.0",
     "@angular/animations": "^20.1.0",
+    "@angular/cdk": "^20.1.0",
     "@angular/common": "^20.1.0",
     "@angular/compiler": "^20.1.0",
     "@angular/core": "^20.1.0",
@@ -50,6 +53,7 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-    "typescript": "~5.8.2"
+    "typescript": "~5.8.2",
+    "webpack-bundle-analyzer": "^4.10.2"
   }
 }
