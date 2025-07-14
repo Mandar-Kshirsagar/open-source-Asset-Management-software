@@ -5,10 +5,32 @@
   box-sizing: border-box;
 }
 
+/* Modify these existing styles */
 html, body { 
   height: 100%; 
   margin: 0;
   padding: 0;
+  overflow: hidden; /* Prevent body scrollbar */
+}
+
+/* Modify the container styles */
+.dashboard-container,
+.assets-container,
+.users-container,
+.reports-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Prevent container scrollbars */
+}
+
+.dashboard-content,
+.assets-content,
+.users-content,
+.reports-content {
+  padding: 24px;
+  flex: 1;
+  overflow: auto; /* Only allow scrolling in content areas */
 }
 
 body { 
@@ -89,6 +111,58 @@ img {
 .mat-mdc-icon-button:focus {
   outline: 2px solid #1976d2;
   outline-offset: 2px;
+}
+
+/* Consistent page containers */
+.dashboard-container,
+.assets-container,
+.users-container,
+.reports-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.dashboard-content,
+.assets-content,
+.users-content,
+.reports-content {
+  padding: 24px;
+  flex: 1;
+  overflow: auto;
+}
+
+/* Consistent page titles */
+.page-title {
+  font-size: 24px;
+  font-weight: 500;
+  margin-bottom: 24px;
+  color: #000000;
+}
+
+/* Consistent action bars */
+.assets-actions,
+.users-actions,
+.reports-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.search-field {
+  width: 300px;
+}
+
+.view-toggle {
+  display: flex;
+  gap: 8px;
+}
+
+.view-toggle .active {
+  background-color: #e3f2fd;
+  color: #1976d2;
 }
 
 /* Reduce motion for users who prefer it */

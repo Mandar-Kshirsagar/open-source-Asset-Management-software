@@ -1,48 +1,63 @@
-// Main layout styles
 .main-root {
-  height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: #f5f5f5;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden; /* Prevent outer scrollbar */
 }
 
 .main-sidenav-container {
   flex: 1;
-  display: flex;
-  height: calc(100vh - 112px); /* header + breadcrumb height */
-  background: #f5f5f5;
+  width: 100%;
+  height: calc(100vh - 128px); /* Adjust based on header + breadcrumb height */
+  overflow: hidden; /* Prevent container scrollbar */
 }
 
 .main-sidenav {
-  width: 220px;
+  width: 250px;
   background: #fff;
   border-right: 1px solid #e0e0e0;
-  padding-top: 16px;
+  overflow-y: auto; /* Allow scrolling in sidenav if needed */
+  overflow-x: hidden;
 }
 
-.main-sidenav .mat-icon {
-  margin-right: 12px;
-  color: #3f51b5;
-}
+/* Remove the sidenav-header styles since we removed that element */
 
 .main-sidenav .active {
   background: #e3f2fd !important;
   color: #1976d2 !important;
+  border-left: 4px solid #1976d2;
+}
+
+.main-sidenav .mat-list-item {
+  height: 48px;
+  margin: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.main-sidenav .mat-list-item:hover {
+  background-color: #f5f5f5;
 }
 
 .main-content {
   flex: 1;
   padding: 24px;
-  overflow: auto;
+  overflow: auto; /* Only allow scrolling in the content area */
   background: #f5f5f5;
+  width: 100%; /* Ensure content takes full width */
 }
 
 @media (max-width: 900px) {
   .main-sidenav {
-    width: 60px;
-    padding-top: 8px;
+    width: 64px;
   }
+  
   .main-sidenav .mat-list-item span {
     display: none;
+  }
+  
+  .main-content {
+    padding: 16px;
   }
 }

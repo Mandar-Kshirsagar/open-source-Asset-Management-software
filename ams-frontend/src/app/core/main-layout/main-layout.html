@@ -1,8 +1,16 @@
 <div class="main-root">
-  <app-header></app-header>
-  <app-breadcrumb></app-breadcrumb>
+  <app-header 
+    [currentUser]="currentUser" 
+    [actionButtonText]="actionButtonText" 
+    [actionButtonIcon]="actionButtonIcon"
+    (actionClick)="onActionClick()">
+  </app-header>
+  
+  <app-breadcrumb [items]="breadcrumbItems"></app-breadcrumb>
+  
   <mat-sidenav-container class="main-sidenav-container">
     <mat-sidenav mode="side" opened class="main-sidenav">
+      <!-- Removed the sidenav-header div with logo and title -->
       <mat-nav-list>
         <a mat-list-item routerLink="/dashboard" routerLinkActive="active">
           <mat-icon>dashboard</mat-icon>
@@ -12,7 +20,7 @@
           <mat-icon>inventory</mat-icon>
           <span>Assets</span>
         </a>
-        <a mat-list-item routerLink="/users" routerLinkActive="active">
+        <a mat-list-item routerLink="/users" routerLinkActive="active" *ngIf="hasAdminRole">
           <mat-icon>people</mat-icon>
           <span>Users</span>
         </a>

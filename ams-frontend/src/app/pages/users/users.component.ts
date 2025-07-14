@@ -29,22 +29,8 @@ import { ConfirmDialogComponent, ConfirmDialogData } from '../../components/conf
   ],
   template: `
     <div class="users-container">
-      <!-- Modern Header -->
-      <app-header 
-        [currentUser]="currentUser"
-        [actionButtonText]="hasRole('Admin') ? 'Add User' : ''"
-        [actionButtonIcon]="'person_add'"
-        (actionClick)="openUserDialog()">
-      </app-header>
-
-      <!-- Breadcrumb -->
-      <app-breadcrumb [items]="breadcrumbItems"></app-breadcrumb>
-
-      <!-- Users Content -->
       <div class="users-content">
-        <div class="page-header">
-          <h1>User Management</h1>
-        </div>
+        <h1 class="page-title">User Management</h1>
 
         <!-- Filters and Actions -->
         <div class="filters-container">
@@ -547,4 +533,4 @@ export class UsersComponent implements OnInit, OnDestroy {
   logout(): void {
     this.authService.logout();
   }
-} 
+}

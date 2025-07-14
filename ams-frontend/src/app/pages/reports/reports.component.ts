@@ -17,28 +17,12 @@ import { User } from '../../models/user.model';
     CommonModule,
     RouterModule,
     SharedMaterialModule,
-    HeaderComponent,
-    BreadcrumbComponent,
     FormsModule
   ],
   template: `
     <div class="reports-container">
-      <!-- Modern Header -->
-      <app-header 
-        [currentUser]="currentUser"
-        [actionButtonText]="'Refresh Reports'"
-        [actionButtonIcon]="'refresh'"
-        (actionClick)="refreshAllReports()">
-      </app-header>
-
-      <!-- Breadcrumb -->
-      <app-breadcrumb [items]="breadcrumbItems"></app-breadcrumb>
-
-      <!-- Reports Content -->
       <div class="reports-content">
-        <div class="page-header">
-          <h1>Reports & Analytics</h1>
-        </div>
+        <h1 class="page-title">Reports & Analytics</h1>
 
             <mat-tab-group>
               <!-- Dashboard Overview Tab -->
@@ -818,4 +802,4 @@ export class ReportsComponent implements OnInit {
   logout(): void {
     this.authService.logout();
   }
-} 
+}

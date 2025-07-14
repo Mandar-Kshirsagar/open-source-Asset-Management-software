@@ -21,37 +21,9 @@ import { ChangeDetectorRef } from '@angular/core';
     BreadcrumbComponent
   ],
   template: `
-    <div class="dashboard-root">
-      <app-header 
-        [currentUser]="currentUser"
-        [actionButtonText]="'New Asset'"
-        [actionButtonIcon]="'add'"
-        (actionClick)="navigateToNewAsset()">
-      </app-header>
-      <app-breadcrumb [items]="breadcrumbItems"></app-breadcrumb>
-      <mat-sidenav-container class="dashboard-sidenav-container">
-        <mat-sidenav mode="side" opened class="dashboard-sidenav">
-          <mat-nav-list>
-            <a mat-list-item routerLink="/dashboard" routerLinkActive="active">
-              <mat-icon>dashboard</mat-icon>
-              <span>Dashboard</span>
-            </a>
-            <a mat-list-item routerLink="/assets" routerLinkActive="active">
-              <mat-icon>inventory</mat-icon>
-              <span>Assets</span>
-            </a>
-            <a mat-list-item routerLink="/users" routerLinkActive="active">
-              <mat-icon>people</mat-icon>
-              <span>Users</span>
-            </a>
-            <a mat-list-item routerLink="/reports" routerLinkActive="active">
-              <mat-icon>analytics</mat-icon>
-              <span>Reports</span>
-            </a>
-          </mat-nav-list>
-        </mat-sidenav>
-        <mat-sidenav-content>
-          <div class="dashboard-content">
+    <div class="dashboard-container">
+      <h1 class="page-title">Dashboard</h1>
+      <div class="dashboard-content">
             <h1>Dashboard</h1>
             <!-- Loading State -->
             <div *ngIf="loading" class="loading-container">
@@ -145,8 +117,6 @@ import { ChangeDetectorRef } from '@angular/core';
               </div>
             </div>
           </div>
-        </mat-sidenav-content>
-      </mat-sidenav-container>
     </div>
   `,
   styles: [`
@@ -404,4 +374,4 @@ export class DashboardComponent implements OnInit {
   getStatusClass(status: string): string {
     return status.toLowerCase();
   }
-} 
+}

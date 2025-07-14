@@ -32,72 +32,26 @@ import { User } from '../../models/user.model';
   ],
   template: `
     <div class="assets-container">
-      <!-- Header Toolbar -->
-      <mat-toolbar color="primary" class="assets-toolbar modern-toolbar">
-        <mat-icon class="app-logo">inventory</mat-icon>
-        <span class="app-title">Asset Manager</span>
-        <span class="toolbar-spacer"></span>
-        <!-- Top Navigation Icons -->
-        <button mat-icon-button matTooltip="List View">
-          <mat-icon>view_list</mat-icon>
-        </button>
-        <button mat-icon-button matTooltip="Card View">
-          <mat-icon>view_module</mat-icon>
-        </button>
-        <button mat-icon-button matTooltip="Reports">
-          <mat-icon>assessment</mat-icon>
-        </button>
-        <button mat-icon-button matTooltip="Location">
-          <mat-icon>location_on</mat-icon>
-        </button>
-        <button mat-icon-button matTooltip="Settings">
-          <mat-icon>settings</mat-icon>
-        </button>
-        <!-- Search Bar -->
-        <mat-form-field class="header-search" appearance="outline">
-          <mat-label>Search Assets</mat-label>
-          <input matInput [(ngModel)]="searchTerm" (input)="onSearch()" placeholder="Search...">
-          <mat-icon matSuffix>search</mat-icon>
-        </mat-form-field>
-        <!-- Create New Button -->
-        <button mat-raised-button color="accent" [matMenuTriggerFor]="createMenu" class="create-button">
-          <mat-icon>add</mat-icon>
-          New
-        <mat-icon>arrow_drop_down</mat-icon>
-      </button>
-        <mat-menu #createMenu="matMenu">
-          <button mat-menu-item routerLink="/assets/new">
-            <mat-icon>devices</mat-icon>
-            Asset
-          </button>
-          <button mat-menu-item>
-            <mat-icon>person</mat-icon>
-            User
-          </button>
-          <button mat-menu-item>
-            <mat-icon>location_on</mat-icon>
-            Location
-          </button>
-        </mat-menu>
-        <!-- User Menu -->
-        <button mat-icon-button [matMenuTriggerFor]="userMenu" class="user-avatar">
-          <mat-icon>account_circle</mat-icon>
-        </button>
-      <mat-menu #userMenu="matMenu">
-          <button mat-menu-item>
-            <mat-icon>person</mat-icon>
-            Profile
-          </button>
-        <button mat-menu-item (click)="logout()">
-          <mat-icon>logout</mat-icon>
-            Logout
-        </button>
-      </mat-menu>
-    </mat-toolbar>
-      <!-- Removed Demo Mode Banner for cleaner UI -->
-
-      <!-- Breadcrumb -->
-      <div class="breadcrumb">
+      <div class="assets-content">
+        <h1 class="page-title">Assets</h1>
+        
+        <!-- View Toggle and Search -->
+        <div class="assets-actions">
+          <div class="view-toggle">
+            <button mat-button [class.active]="viewMode === 'list'" (click)="viewMode = 'list'">
+              <mat-icon>view_list</mat-icon> List
+            </button>
+            <button mat-button [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'">
+              <mat-icon>view_module</mat-icon> Grid
+            </button>
+          </div>
+          
+          <mat-form-field class="search-field" appearance="outline">
+            <mat-label>Search Assets</mat-label>
+            <input matInput [(ngModel)]="searchTerm" (input)="onSearch()" placeholder="Search...">
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+        </div>
         <mat-icon>home</mat-icon>
         <span class="breadcrumb-separator">></span>
               <span>Assets</span>
@@ -694,6 +648,7 @@ export class AssetsComponent implements OnInit, OnDestroy {
   searchTerm = '';
   selectedAction = '';
   pageSize = 20;
+  viewMode = 'list'; // Default view mode
   currentPage = 0;
   
   // Selection
@@ -906,4 +861,4 @@ export class AssetsComponent implements OnInit, OnDestroy {
   logout(): void {
     this.authService.logout();
   }
-} 
+}
