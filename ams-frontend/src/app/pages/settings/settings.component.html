@@ -1,0 +1,19 @@
+<div class="settings-container">
+  <h2>Settings</h2>
+  <mat-card>
+    <mat-card-content>
+      <mat-slide-toggle [(ngModel)]="darkMode" (change)="toggleDarkMode()">
+        Dark Mode
+      </mat-slide-toggle>
+      <br />
+      <mat-slide-toggle [(ngModel)]="notifications" (change)="toggleNotifications()">
+        Enable Notifications
+      </mat-slide-toggle>
+      <br />
+      <div class="profile-update-placeholder">
+        <h3>Profile Update</h3>
+        <p>Profile update functionality coming soon...</p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div> 

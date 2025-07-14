@@ -16,6 +16,7 @@ export const routes: Routes = [
       { path: 'assets/:id/edit', loadComponent: () => import('./pages/assets/asset-form/asset-form.component').then(m => m.AssetFormComponent) },
       { path: 'users', loadComponent: () => import('./pages/users/users.component').then(m => m.UsersComponent) },
       { path: 'reports', loadComponent: () => import('./pages/reports/reports.component').then(m => m.ReportsComponent) },
+      { path: 'settings', loadComponent: () => import('./pages/settings/settings.component').then(m => m.SettingsComponent) },
       { path: '**', redirectTo: '/dashboard' }
     ]
   }
