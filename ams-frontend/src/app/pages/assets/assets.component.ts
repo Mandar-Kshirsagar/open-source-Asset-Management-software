@@ -6,6 +6,8 @@ import { Subject, debounceTime, distinctUntilChanged, takeUntil, startWith, swit
 
 // Import shared Material module and required Material types
 import { SharedMaterialModule } from '../../shared/material.module';
+import { HeaderComponent } from '../../shared/header/header.component';
+import { BreadcrumbComponent, BreadcrumbItem } from '../../shared/breadcrumb/breadcrumb.component';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
@@ -26,7 +28,9 @@ import { User } from '../../models/user.model';
     RouterModule,
     ReactiveFormsModule,
     FormsModule,
-    SharedMaterialModule
+    SharedMaterialModule,
+    HeaderComponent,
+    BreadcrumbComponent
   ],
   template: `
     <div class="assets-container">
@@ -683,6 +687,10 @@ export class AssetsComponent implements OnInit, OnDestroy {
   totalAssets = 0;
   loading = false;
   error = '';
+  
+  breadcrumbItems: BreadcrumbItem[] = [
+    { label: 'Assets', icon: 'inventory' }
+  ];
   
   // Search and filters
   searchTerm = '';

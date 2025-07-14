@@ -1,21 +1,10 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatListModule } from '@angular/material/list';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatTabsModule } from '@angular/material/tabs';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatTableModule } from '@angular/material/table';
-import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
+import { SharedMaterialModule } from '../../shared/material.module';
+import { HeaderComponent } from '../../shared/header/header.component';
+import { BreadcrumbComponent, BreadcrumbItem } from '../../shared/breadcrumb/breadcrumb.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { FormsModule } from '@angular/forms';
 import { ReportsService } from '../../services/reports.service';
 import { AuthService } from '../../services/auth.service';
@@ -27,71 +16,29 @@ import { User } from '../../models/user.model';
   imports: [
     CommonModule,
     RouterModule,
-    MatCardModule,
-    MatButtonModule,
-    MatIconModule,
-    MatToolbarModule,
-    MatSidenavModule,
-    MatListModule,
-    MatMenuModule,
-    MatTabsModule,
-    MatProgressSpinnerModule,
-    MatSnackBarModule,
-    MatChipsModule,
-    MatTableModule,
-    MatPaginatorModule,
-    MatFormFieldModule,
-    MatSelectModule,
+    SharedMaterialModule,
+    HeaderComponent,
+    BreadcrumbComponent,
     FormsModule
   ],
   template: `
-    <mat-toolbar color="primary">
-      <span>Asset Management System</span>
-      <span class="spacer"></span>
-      <button mat-button [matMenuTriggerFor]="userMenu">
-        {{ currentUser?.firstName }} {{ currentUser?.lastName }}
-        <mat-icon>arrow_drop_down</mat-icon>
-      </button>
-      <mat-menu #userMenu="matMenu">
-        <button mat-menu-item (click)="logout()">
-          <mat-icon>logout</mat-icon>
-          <span>Logout</span>
-        </button>
-      </mat-menu>
-    </mat-toolbar>
-
     <div class="reports-container">
-      <mat-sidenav-container>
-        <mat-sidenav mode="side" opened class="sidenav">
-          <mat-nav-list>
-            <a mat-list-item routerLink="/dashboard" routerLinkActive="active">
-              <mat-icon>dashboard</mat-icon>
-              <span>Dashboard</span>
-            </a>
-            <a mat-list-item routerLink="/assets" routerLinkActive="active">
-              <mat-icon>inventory</mat-icon>
-              <span>Assets</span>
-            </a>
-            <a mat-list-item routerLink="/users" routerLinkActive="active" *ngIf="hasRole('Admin')">
-              <mat-icon>people</mat-icon>
-              <span>Users</span>
-            </a>
-            <a mat-list-item routerLink="/reports" routerLinkActive="active">
-              <mat-icon>analytics</mat-icon>
-              <span>Reports</span>
-            </a>
-          </mat-nav-list>
-        </mat-sidenav>
+      <!-- Modern Header -->
+      <app-header 
+        [currentUser]="currentUser"
+        [actionButtonText]="'Refresh Reports'"
+        [actionButtonIcon]="'refresh'"
+        (actionClick)="refreshAllReports()">
+      </app-header>
 
-        <mat-sidenav-content class="content">
-          <div class="reports-content">
-            <div class="header">
-              <h1>Reports & Analytics</h1>
-              <button mat-raised-button color="primary" (click)="refreshAllReports()">
-                <mat-icon>refresh</mat-icon>
-                Refresh Reports
-              </button>
-            </div>
+      <!-- Breadcrumb -->
+      <app-breadcrumb [items]="breadcrumbItems"></app-breadcrumb>
+
+      <!-- Reports Content -->
+      <div class="reports-content">
+        <div class="page-header">
+          <h1>Reports & Analytics</h1>
+        </div>
 
             <mat-tab-group>
               <!-- Dashboard Overview Tab -->
@@ -387,10 +334,8 @@ import { User } from '../../models/user.model';
                   </div>
                 </div>
               </mat-tab>
-            </mat-tab-group>
-          </div>
-        </mat-sidenav-content>
-      </mat-sidenav-container>
+        </mat-tab-group>
+      </div>
     </div>
   `,
   styles: [`
@@ -734,6 +679,10 @@ import { User } from '../../models/user.model';
 export class ReportsComponent implements OnInit {
   currentUser: User | null = null;
   loading = false;
+  
+  breadcrumbItems: BreadcrumbItem[] = [
+    { label: 'Reports', icon: 'analytics' }
+  ];
   
   // Dashboard data
   dashboardStats: any = null;
