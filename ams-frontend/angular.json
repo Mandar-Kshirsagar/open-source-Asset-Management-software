@@ -39,9 +39,11 @@
               "scripts": true,
               "styles": {
                 "minify": true,
-                "inlineCritical": false
+                "inlineCritical": true
               },
-              "fonts": true
+              "fonts": {
+                "inline": false
+              }
             },
             "sourceMap": false,
             "namedChunks": false,
@@ -50,13 +52,19 @@
             "budgets": [
               {
                 "type": "initial",
-                "maximumWarning": "1MB",
-                "maximumError": "2MB"
+                "maximumWarning": "500kB",
+                "maximumError": "1MB"
               },
               {
                 "type": "anyComponentStyle",
-                "maximumWarning": "8kB",
-                "maximumError": "16kB"
+                "maximumWarning": "6kB",
+                "maximumError": "12kB"
+              },
+              {
+                "type": "bundle",
+                "name": "main",
+                "maximumWarning": "200kB",
+                "maximumError": "400kB"
               }
             ]
           },
@@ -65,13 +73,19 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "1MB",
-                  "maximumError": "2MB"
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "8kB",
-                  "maximumError": "16kB"
+                  "maximumWarning": "6kB",
+                  "maximumError": "12kB"
+                },
+                {
+                  "type": "bundle",
+                  "name": "main",
+                  "maximumWarning": "200kB",
+                  "maximumError": "400kB"
                 }
               ],
               "outputHashing": "all",
@@ -79,9 +93,11 @@
                 "scripts": true,
                 "styles": {
                   "minify": true,
-                  "inlineCritical": false
+                  "inlineCritical": true
                 },
-                "fonts": true
+                "fonts": {
+                  "inline": false
+                }
               },
               "sourceMap": false,
               "namedChunks": false,
