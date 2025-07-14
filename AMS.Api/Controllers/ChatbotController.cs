@@ -92,10 +92,11 @@ namespace AMS.Api.Controllers
                 model = "gpt-3.5-turbo",
                 messages = new[]
                 {
-                    new { role = "system", content = "You are an assistant for the Asset Management System. Only answer using the provided data. If the answer is not present in the data, say 'I don't know.' Do not make up information." },
+                    new { role = "system", content = "You are a helpful assistant for the Asset Management System. Provide concise, accurate answers based on the provided data. If you're not sure, say 'I don't have that information yet.' Be friendly and professional." },
                     new { role = "user", content = dataPrompt + "\nUser question: " + request.Message }
                 },
-                max_tokens = 256
+                max_tokens = 256,
+                temperature = 0.7
             };
 
             var content = new StringContent(JsonSerializer.Serialize(openAiRequest), Encoding.UTF8, "application/json");
@@ -117,4 +118,4 @@ namespace AMS.Api.Controllers
             }
         }
     }
-} 
+}

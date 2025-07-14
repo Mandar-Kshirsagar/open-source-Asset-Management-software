@@ -31,9 +31,8 @@ interface ChatMessage {
       <div class="chatbot-messages" #scrollMe>
         <div *ngFor="let msg of messages" [ngClass]="msg.role">
           <div class="msg-bubble">
-            <span *ngIf="msg.role === 'user'" class="user-label">You:</span>
-            <span *ngIf="msg.role === 'assistant'" class="assistant-label">AI:</span>
-            {{ msg.content }}
+            <ng-container *ngIf="msg.role === 'user'">You: {{ msg.content }}</ng-container>
+            <ng-container *ngIf="msg.role === 'assistant'">AI: {{ msg.content }}</ng-container>
           </div>
         </div>
         <div *ngIf="loading" class="loading-msg">
@@ -155,6 +154,7 @@ interface ChatMessage {
       font-size: 1rem;
       box-shadow: 0 1px 4px rgba(25, 118, 210, 0.06);
       transition: background 0.2s;
+      white-space: pre-wrap;
     }
     .user .msg-bubble {
       background: linear-gradient(135deg, #1976d2 60%, #42a5f5 100%);
@@ -281,4 +281,4 @@ export class ChatbotWidgetComponent implements AfterViewInit, AfterViewChecked {
       }
     } catch {}
   }
-} 
+}
