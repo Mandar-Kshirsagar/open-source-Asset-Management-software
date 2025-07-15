@@ -1,121 +1,293 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
-using AMS.Api.Data;
-using AMS.Api.DTOs;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using AMS.Api.Models;
+using AMS.Api.Services;
+using System.Security.Claims;
 
 namespace AMS.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class ChatbotController : ControllerBase
     {
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IConfiguration _configuration;
-        private readonly AMSContext _context;
+        private readonly IAIChatbotService _chatbotService;
+        private readonly IDatabaseSchemaService _schemaService;
+        private readonly ISqlQueryService _sqlQueryService;
+        private readonly ILogger<ChatbotController> _logger;
 
-        public ChatbotController(IHttpClientFactory httpClientFactory, IConfiguration configuration, AMSContext context)
+        public ChatbotController(
+            IAIChatbotService chatbotService,
+            IDatabaseSchemaService schemaService,
+            ISqlQueryService sqlQueryService,
+            ILogger<ChatbotController> logger)
         {
-            _httpClientFactory = httpClientFactory;
-            _configuration = configuration;
-            _context = context;
+            _chatbotService = chatbotService;
+            _schemaService = schemaService;
+            _sqlQueryService = sqlQueryService;
+            _logger = logger;
         }
 
-        public class ChatRequest
+        /// <summary>
+        /// Send a message to the AI chatbot
+        /// </summary>
+        [HttpPost("message")]
+        public async Task<ActionResult<ChatbotResponse>> SendMessage([FromBody] ChatbotRequest request)
         {
-            public string Message { get; set; } = string.Empty;
-        }
-
-        public class ChatResponse
-        {
-            public string Response { get; set; } = string.Empty;
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Post([FromBody] ChatRequest request)
-        {
-            var apiKey = _configuration["OpenAI:ApiKey"];
-            if (string.IsNullOrEmpty(apiKey))
-            {
-                return StatusCode(500, new { error = "OpenAI API key is not configured." });
-            }
-
-            // Dynamic knowledge: parse question and fetch relevant data
-            string dataPrompt = string.Empty;
-            string lowerMsg = request.Message.ToLower();
-
-            if (lowerMsg.Contains("asset"))
-            {
-                var assets = await _context.Assets.Include(a => a.AssignedToUser).Take(5).ToListAsync();
-                dataPrompt = "Sample assets: " + string.Join("; ", assets.Select(a => $"{a.Name} (Tag: {a.AssetTag}, Status: {a.Status}, Assigned: {(a.AssignedToUser != null ? a.AssignedToUser.FirstName + " " + a.AssignedToUser.LastName : "None")})"));
-            }
-            else if (lowerMsg.Contains("user"))
-            {
-                var users = await _context.Users.Take(5).ToListAsync();
-                dataPrompt = "Sample users: " + string.Join("; ", users.Select(u => $"{u.FirstName} {u.LastName} (Username: {u.Username}, Role: {u.Role}, Active: {u.IsActive})"));
-            }
-            else if (lowerMsg.Contains("maintenance"))
-            {
-                var maint = await _context.MaintenanceRecords.Include(m => m.Asset).OrderByDescending(m => m.ScheduledDate).Take(5).ToListAsync();
-                dataPrompt = "Recent maintenance: " + string.Join("; ", maint.Select(m => $"{m.Title} for {m.Asset.Name} on {m.ScheduledDate:yyyy-MM-dd} (Status: {m.Status})"));
-            }
-            else if (lowerMsg.Contains("history") || lowerMsg.Contains("activity"))
-            {
-                var history = await _context.AssetHistories.Include(h => h.Asset).Include(h => h.User).OrderByDescending(h => h.Timestamp).Take(5).ToListAsync();
-                dataPrompt = "Recent activity: " + string.Join("; ", history.Select(h => $"{h.Action} on {h.Asset.Name} by {(h.User != null ? h.User.FirstName + " " + h.User.LastName : "System")} at {h.Timestamp:yyyy-MM-dd HH:mm}"));
-            }
-            else
-            {
-                // Default: provide a summary of the system
-                int assetCount = await _context.Assets.CountAsync();
-                int userCount = await _context.Users.CountAsync();
-                int maintCount = await _context.MaintenanceRecords.CountAsync();
-                dataPrompt = $"System summary: {assetCount} assets, {userCount} users, {maintCount} maintenance records.";
-            }
-
-            // DEBUG: Return the dataPrompt for troubleshooting
-            if (request.Message.Trim().ToLower() == "debug-dataprompt")
-            {
-                return Ok(new { dataPrompt });
-            }
-
-            var httpClient = _httpClientFactory.CreateClient();
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-
-            var openAiRequest = new
-            {
-                model = "gpt-3.5-turbo",
-                messages = new[]
-                {
-                    new { role = "system", content = "You are a helpful assistant for the Asset Management System. Provide concise, accurate answers based on the provided data. If you're not sure, say 'I don't have that information yet.' Be friendly and professional." },
-                    new { role = "user", content = dataPrompt + "\nUser question: " + request.Message }
-                },
-                max_tokens = 256,
-                temperature = 0.7
-            };
-
-            var content = new StringContent(JsonSerializer.Serialize(openAiRequest), Encoding.UTF8, "application/json");
             try
             {
-                var response = await httpClient.PostAsync("https://api.openai.com/v1/chat/completions", content);
-                var responseString = await response.Content.ReadAsStringAsync();
-                if (!response.IsSuccessStatusCode)
+                if (!ModelState.IsValid)
                 {
-                    return StatusCode((int)response.StatusCode, new { error = responseString });
+                    return BadRequest(ModelState);
                 }
-                using var doc = JsonDocument.Parse(responseString);
-                var chatContent = doc.RootElement.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString();
-                return Ok(new ChatResponse { Response = chatContent ?? "No response from AI." });
+
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "unknown";
+                var response = await _chatbotService.ProcessMessageAsync(request, userId);
+
+                if (!response.IsSuccessful)
+                {
+                    return BadRequest(response);
+                }
+
+                return Ok(response);
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
-                return StatusCode(500, new { error = ex.Message });
+                _logger.LogError(ex, "Error processing chatbot message from user {UserId}", 
+                    User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+                
+                return StatusCode(500, new ChatbotResponse
+                {
+                    Response = "I'm experiencing technical difficulties. Please try again later.",
+                    IsSuccessful = false,
+                    ErrorMessage = "Internal server error",
+                    SessionId = request.SessionId ?? Guid.NewGuid().ToString()
+                });
             }
         }
+
+        /// <summary>
+        /// Get database schema information
+        /// </summary>
+        [HttpGet("schema")]
+        public async Task<ActionResult<DatabaseSchema>> GetDatabaseSchema()
+        {
+            try
+            {
+                var schema = await _schemaService.GetDatabaseSchemaAsync();
+                return Ok(schema);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving database schema");
+                return StatusCode(500, "Error retrieving database schema");
+            }
+        }
+
+        /// <summary>
+        /// Get formatted schema description for AI context
+        /// </summary>
+        [HttpGet("schema/description")]
+        public async Task<ActionResult<string>> GetSchemaDescription()
+        {
+            try
+            {
+                var description = await _schemaService.GetSchemaDescriptionForAIAsync();
+                return Ok(new { description });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving schema description");
+                return StatusCode(500, "Error retrieving schema description");
+            }
+        }
+
+        /// <summary>
+        /// Execute a custom SQL query (for advanced users - with restrictions)
+        /// </summary>
+        [HttpPost("query")]
+        [Authorize(Roles = "Admin,Manager")] // Restrict to authorized roles
+        public async Task<ActionResult<SqlQueryResult>> ExecuteCustomQuery([FromBody] CustomQueryRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(request.SqlQuery))
+                {
+                    return BadRequest("SQL query is required");
+                }
+
+                var result = await _sqlQueryService.ExecuteQueryAsync(request.SqlQuery);
+                
+                // Log the query execution for audit purposes
+                _logger.LogInformation("Custom SQL query executed by user {UserId}: {Query}", 
+                    User.FindFirst(ClaimTypes.NameIdentifier)?.Value, request.SqlQuery);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error executing custom query");
+                return StatusCode(500, new SqlQueryResult
+                {
+                    IsSuccessful = false,
+                    ErrorMessage = "Error executing query",
+                    ExecutedSql = request.SqlQuery
+                });
+            }
+        }
+
+        /// <summary>
+        /// Validate a SQL query without executing it
+        /// </summary>
+        [HttpPost("validate-query")]
+        public async Task<ActionResult<QueryValidationResult>> ValidateQuery([FromBody] QueryValidationRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(request.SqlQuery))
+                {
+                    return BadRequest("SQL query is required");
+                }
+
+                var isValid = await _sqlQueryService.ValidateQueryAsync(request.SqlQuery);
+                
+                return Ok(new QueryValidationResult
+                {
+                    IsValid = isValid,
+                    Query = request.SqlQuery,
+                    Message = isValid ? "Query is valid" : "Query validation failed"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error validating query");
+                return StatusCode(500, new QueryValidationResult
+                {
+                    IsValid = false,
+                    Query = request.SqlQuery,
+                    Message = "Error during validation"
+                });
+            }
+        }
+
+        /// <summary>
+        /// Get basic database statistics
+        /// </summary>
+        [HttpGet("stats")]
+        public async Task<ActionResult<Dictionary<string, object>>> GetDatabaseStats()
+        {
+            try
+            {
+                var sqlService = _sqlQueryService as SqlQueryService;
+                if (sqlService == null)
+                {
+                    return StatusCode(500, "Service not available");
+                }
+
+                var stats = await sqlService.GetQueryStatisticsAsync();
+                return Ok(stats);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving database statistics");
+                return StatusCode(500, "Error retrieving database statistics");
+            }
+        }
+
+        /// <summary>
+        /// Get chatbot capabilities and help information
+        /// </summary>
+        [HttpGet("help")]
+        public ActionResult<ChatbotHelp> GetHelp()
+        {
+            var help = new ChatbotHelp
+            {
+                Description = "AI-powered database assistant for the Asset Management System",
+                Capabilities = new List<string>
+                {
+                    "Natural language database queries",
+                    "Schema information retrieval",
+                    "Data analysis and reporting",
+                    "Asset information lookup",
+                    "User and assignment queries",
+                    "Maintenance record searches",
+                    "Statistical analysis"
+                },
+                ExampleQueries = new List<string>
+                {
+                    "Show me all laptops",
+                    "How many assets do we have?",
+                    "List users with their assigned assets",
+                    "Find assets that need maintenance",
+                    "Show me Dell computers purchased this year",
+                    "Count assets by category",
+                    "Who has the most assets assigned?",
+                    "What maintenance was done last month?"
+                },
+                SupportedOperations = new List<string>
+                {
+                    "SELECT queries only (read-only)",
+                    "JOIN operations across related tables",
+                    "Filtering by various criteria",
+                    "Aggregation functions (COUNT, SUM, AVG)",
+                    "Date range queries",
+                    "Pattern matching searches"
+                },
+                Limitations = new List<string>
+                {
+                    "No data modification operations (INSERT, UPDATE, DELETE)",
+                    "Limited to AMS database tables only",
+                    "Query timeout of 30 seconds",
+                    "Results limited to prevent excessive data transfer",
+                    "Advanced SQL features may not be supported"
+                }
+            };
+
+            return Ok(help);
+        }
+
+        /// <summary>
+        /// Test endpoint to verify chatbot connectivity
+        /// </summary>
+        [HttpGet("health")]
+        [AllowAnonymous]
+        public ActionResult<object> HealthCheck()
+        {
+            return Ok(new
+            {
+                Status = "Healthy",
+                Timestamp = DateTime.UtcNow,
+                Version = "1.0.0",
+                Features = new[] { "NLP Query Processing", "SQL Generation", "Schema Analysis", "Safety Validation" }
+            });
+        }
+    }
+
+    // Additional DTOs for the controller
+    public class CustomQueryRequest
+    {
+        public string SqlQuery { get; set; } = string.Empty;
+        public string? Description { get; set; }
+    }
+
+    public class QueryValidationRequest
+    {
+        public string SqlQuery { get; set; } = string.Empty;
+    }
+
+    public class QueryValidationResult
+    {
+        public bool IsValid { get; set; }
+        public string Query { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
+    }
+
+    public class ChatbotHelp
+    {
+        public string Description { get; set; } = string.Empty;
+        public List<string> Capabilities { get; set; } = new();
+        public List<string> ExampleQueries { get; set; } = new();
+        public List<string> SupportedOperations { get; set; } = new();
+        public List<string> Limitations { get; set; } = new();
     }
 }
