@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -100,6 +100,12 @@ builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<RefreshTokenService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<AssetService>();
+
+// Register Chatbot Services
+builder.Services.AddScoped<IDatabaseSchemaService, DatabaseSchemaService>();
+builder.Services.AddScoped<ISqlQueryService, SqlQueryService>();
+builder.Services.AddScoped<IAIChatbotService, AIChatbotService>();
+
 builder.Services.AddHttpClient();
 
 // Configure Swagger

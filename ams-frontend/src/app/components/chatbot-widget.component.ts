@@ -1,23 +1,21 @@
 import { Component, ChangeDetectionStrategy, ApplicationRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ChangeDetectorRef } from '@angular/core';
-import { NgZone, ViewChild, ElementRef, AfterViewInit, AfterViewChecked } from '@angular/core';
-
-interface ChatMessage {
-  role: 'user' | 'assistant';
-  content: string;
-}
+import { NgZone, ViewChild, ElementRef, AfterViewInit, AfterViewChecked, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { ChatbotService, ChatMessage } from '../services/chatbot.service';
 
 @Component({
   selector: 'app-chatbot-widget',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatIconModule, MatButtonModule, MatInputModule, MatProgressSpinnerModule],
+  imports: [CommonModule, FormsModule, MatIconModule, MatButtonModule, MatInputModule, MatProgressSpinnerModule, MatMenuModule, MatTooltipModule],
   template: `
     <div class="chatbot-fab" (click)="toggleChat()" *ngIf="!open">
       <mat-icon>chat</mat-icon>
@@ -25,20 +23,56 @@ interface ChatMessage {
     <div class="chatbot-window" *ngIf="open" [ngStyle]="{top: position.top + 'px', left: position.left + 'px'}" (mousedown)="startDrag($event)">
       <div class="chatbot-header">
         <div class="avatar"><mat-icon>smart_toy</mat-icon></div>
-        <span>AI Assistant</span>
-        <button mat-icon-button (click)="toggleChat()"><mat-icon>close</mat-icon></button>
+        <span>AI Database Assistant</span>
+        <div class="header-actions">
+          <button mat-icon-button [matMenuTriggerFor]="menu" matTooltip="Options">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <mat-menu #menu="matMenu">
+            <button mat-menu-item (click)="showHelp()">
+              <mat-icon>help</mat-icon>
+              <span>Help</span>
+            </button>
+            <button mat-menu-item (click)="downloadHistory()">
+              <mat-icon>download</mat-icon>
+              <span>Download History</span>
+            </button>
+            <button mat-menu-item (click)="clearChat()">
+              <mat-icon>clear</mat-icon>
+              <span>Clear Chat</span>
+            </button>
+          </mat-menu>
+          <button mat-icon-button (click)="toggleChat()"><mat-icon>close</mat-icon></button>
+        </div>
       </div>
-      <div class="chatbot-messages" #scrollMe>
-        <div *ngFor="let msg of messages" [ngClass]="msg.role">
-          <div class="msg-bubble">
-            <ng-container *ngIf="msg.role === 'user'">You: {{ msg.content }}</ng-container>
-            <ng-container *ngIf="msg.role === 'assistant'">AI: {{ msg.content }}</ng-container>
+                      <div class="chatbot-messages" #scrollMe>
+          <div *ngFor="let msg of messages" [ngClass]="msg.role">
+            <div class="msg-bubble" [ngClass]="{'error-msg': msg.isError}">
+              <div class="msg-content">
+                <ng-container *ngIf="msg.role === 'user'">{{ msg.content }}</ng-container>
+                <ng-container *ngIf="msg.role === 'assistant'">{{ msg.content }}</ng-container>
+              </div>
+              <div *ngIf="msg.sqlQuery" class="sql-query">
+                <div class="sql-header">
+                  <mat-icon>code</mat-icon>
+                  <span>Generated SQL:</span>
+                </div>
+                <pre class="sql-code">{{ msg.sqlQuery }}</pre>
+              </div>
+              <div *ngIf="msg.queryResult" class="query-result">
+                <div class="result-header">
+                  <mat-icon>table_view</mat-icon>
+                  <span>Query Results:</span>
+                </div>
+                <pre class="result-data">{{ formatResult(msg.queryResult) }}</pre>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="loading" class="loading-msg">
+            <mat-progress-spinner diameter="24" mode="indeterminate"></mat-progress-spinner>
+            <span>Thinking...</span>
           </div>
         </div>
-        <div *ngIf="loading" class="loading-msg">
-          <mat-progress-spinner diameter="24" mode="indeterminate"></mat-progress-spinner>
-        </div>
-      </div>
       <form class="chatbot-input" (ngSubmit)="sendMessage()">
         <input matInput [(ngModel)]="input" name="input" placeholder="Type your question..." [disabled]="loading" autocomplete="off" />
         <button mat-icon-button color="primary" type="submit" [disabled]="!input.trim() || loading">
@@ -185,10 +219,76 @@ interface ChatMessage {
         height: 70vh;
       }
     }
+    
+    /* New styles for enhanced chatbot */
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .error-msg {
+      border-left: 4px solid #f44336 !important;
+      background: #ffebee !important;
+    }
+    
+    .sql-query, .query-result {
+      margin-top: 12px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #e0e0e0;
+    }
+    
+    .sql-header, .result-header {
+      background: #f5f5f5;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      color: #555;
+    }
+    
+    .sql-code, .result-data {
+      margin: 0;
+      padding: 12px;
+      background: #fafafa;
+      border: none;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      white-space: pre-wrap;
+      overflow-x: auto;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .sql-code {
+      background: #f8f8f8;
+      color: #d73027;
+    }
+    
+    .result-data {
+      background: #f0f8ff;
+      color: #333;
+    }
+    
+    .loading-msg {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      margin: 16px 0;
+    }
+    
+    .loading-msg span {
+      font-size: 0.9rem;
+      color: #666;
+    }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ChatbotWidgetComponent implements AfterViewInit, AfterViewChecked {
+export class ChatbotWidgetComponent implements AfterViewInit, AfterViewChecked, OnDestroy {
   open = false;
   input = '';
   messages: ChatMessage[] = [];
@@ -198,9 +298,27 @@ export class ChatbotWidgetComponent implements AfterViewInit, AfterViewChecked {
   private dragOffset = { x: 0, y: 0 };
   private windowWidth = 370; // match .chatbot-window width
   private windowHeight = 520; // match .chatbot-window height
+  private subscription: Subscription = new Subscription();
   @ViewChild('scrollMe') scrollMe!: ElementRef;
 
-  constructor(private http: HttpClient, private cdr: ChangeDetectorRef, private zone: NgZone, private appRef: ApplicationRef) {}
+  constructor(
+    private chatbotService: ChatbotService,
+    private cdr: ChangeDetectorRef, 
+    private zone: NgZone, 
+    private appRef: ApplicationRef
+  ) {
+    // Subscribe to messages from the service
+    this.subscription.add(
+      this.chatbotService.messages$.subscribe(messages => {
+        this.messages = messages;
+        this.cdr.markForCheck();
+      })
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
+  }
 
   ngAfterViewInit() {
     this.scrollToBottom();
@@ -226,28 +344,66 @@ export class ChatbotWidgetComponent implements AfterViewInit, AfterViewChecked {
   sendMessage() {
     const msg = this.input.trim();
     if (!msg) return;
-    this.messages.push({ role: 'user', content: msg });
+    
     this.input = '';
     this.loading = true;
     this.cdr.markForCheck();
-    this.http.post<{ response: string }>('/api/chatbot', { message: msg }).subscribe({
-      next: (res) => {
-        this.zone.run(() => {
-          this.messages.push({ role: 'assistant', content: res.response });
-          this.loading = false;
-          this.cdr.markForCheck();
-          this.appRef.tick();
-        });
-      },
-      error: (err) => {
-        this.zone.run(() => {
-          this.messages.push({ role: 'assistant', content: 'Sorry, there was an error contacting the AI.' });
-          this.loading = false;
-          this.cdr.markForCheck();
-          this.appRef.tick();
-        });
-      }
-    });
+    
+    this.subscription.add(
+      this.chatbotService.sendMessage(msg).subscribe({
+        next: (response) => {
+          this.zone.run(() => {
+            this.chatbotService.addAssistantMessage(response);
+            this.loading = false;
+            this.cdr.markForCheck();
+            this.appRef.tick();
+          });
+        },
+        error: (err) => {
+          this.zone.run(() => {
+            console.error('Chatbot error:', err);
+            this.chatbotService.addErrorMessage('Sorry, there was an error processing your request. Please try again.');
+            this.loading = false;
+            this.cdr.markForCheck();
+            this.appRef.tick();
+          });
+        }
+      })
+    );
+  }
+
+  showHelp() {
+    this.subscription.add(
+      this.chatbotService.getHelp().subscribe({
+        next: (help) => {
+          let helpMessage = `${help.description}\n\n`;
+          helpMessage += `**Example Queries:**\n${help.exampleQueries.map(q => `• ${q}`).join('\n')}\n\n`;
+          helpMessage += `**Capabilities:**\n${help.capabilities.map(c => `• ${c}`).join('\n')}\n\n`;
+          helpMessage += `**Limitations:**\n${help.limitations.map(l => `• ${l}`).join('\n')}`;
+          
+          this.chatbotService.addAssistantMessage({
+            response: helpMessage,
+            isSuccessful: true,
+            sessionId: ''
+          });
+        },
+        error: () => {
+          this.chatbotService.addErrorMessage('Unable to load help information.');
+        }
+      })
+    );
+  }
+
+  downloadHistory() {
+    this.chatbotService.downloadChatHistory();
+  }
+
+  clearChat() {
+    this.chatbotService.clearMessages();
+  }
+
+  formatResult(result: any): string {
+    return this.chatbotService.formatQueryResult(result);
   }
 
   startDrag(event: MouseEvent) {
