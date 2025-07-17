@@ -282,6 +282,11 @@ namespace AMS.Api.Services
                 .Distinct()
                 .ToListAsync();
 
+            if (!categories.Any())
+            {
+                categories = new List<string> { "Electronics", "Furniture", "Vehicles", "Machinery", "Other" };
+            }
+
             // Cache for 30 minutes
             var cacheOptions = new MemoryCacheEntryOptions()
                 .SetSlidingExpiration(TimeSpan.FromMinutes(30));
@@ -304,6 +309,11 @@ namespace AMS.Api.Services
                 .Select(a => a.Location)
                 .Distinct()
                 .ToListAsync();
+
+            if (!locations.Any())
+            {
+                locations = new List<string> { "Main Office", "Warehouse A", "Remote Site", "Branch B", "Storage" };
+            }
 
             // Cache for 30 minutes
             var cacheOptions = new MemoryCacheEntryOptions()

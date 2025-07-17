@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil, startWith, switchMap, catchError, of } from 'rxjs';
 
@@ -668,7 +668,8 @@ export class AssetsComponent implements OnInit, OnDestroy {
     private assetService: AssetService,
     private authService: AuthService,
     private snackBar: MatSnackBar,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router
   ) {
     // Setup search debouncing
     this.searchSubject.pipe(
@@ -764,15 +765,17 @@ export class AssetsComponent implements OnInit, OnDestroy {
     
     switch (this.selectedAction) {
       case 'edit':
-        // Handle bulk edit
-        this.snackBar.open(`Editing ${selectedAssets.length} assets`, 'Close', { duration: 3000 });
+        if (selectedAssets.length > 0) {
+          this.router.navigate(['/assets', selectedAssets[0].id, 'edit']);
+        } else {
+          this.snackBar.open('Please select at least one asset to edit', 'Close', { duration: 3000 });
+        }
         break;
       case 'delete':
         this.bulkDelete(selectedAssets);
         break;
       case 'assign':
-        // Handle bulk assignment
-        this.snackBar.open(`Assigning ${selectedAssets.length} assets`, 'Close', { duration: 3000 });
+        this.bulkAssign(selectedAssets);
         break;
     }
   }
@@ -793,21 +796,81 @@ export class AssetsComponent implements OnInit, OnDestroy {
   }
 
   bulkDelete(assets: Asset[]): void {
-    if (confirm(`Are you sure you want to delete ${assets.length} assets?`)) {
-      // Handle bulk delete
-      this.snackBar.open(`Deleting ${assets.length} assets`, 'Close', { duration: 3000 });
-      this.selection.clear();
+    if (confirm(`Are you sure you want to delete ${assets.length} selected assets?`)) {
+      this.loading = true;
+      const deletePromises = assets.map(asset => 
+        this.assetService.deleteAsset(asset.id).pipe(
+          catchError(err => {
+            this.snackBar.open(`Failed to delete asset ${asset.name}`, 'Close', { duration: 3000 });
+            return of(null);
+          })
+        ).toPromise()
+      );
+
+      Promise.all(deletePromises).then(() => {
+        this.snackBar.open(`${assets.length} assets deleted successfully`, 'Close', { duration: 3000 });
+        this.selection.clear();
+        this.loadAssets();
+      }).finally(() => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      });
     }
   }
 
   assignAsset(asset: Asset): void {
-    // Handle asset assignment
-    this.snackBar.open('Assignment functionality to be implemented', 'Close', { duration: 3000 });
+    const userId = prompt(`Enter User ID to assign ${asset.name} to:`);
+    if (userId) {
+      this.assetService.assignAsset(asset.id, +userId).pipe(
+        takeUntil(this.destroy$),
+        catchError(err => {
+          this.snackBar.open(`Failed to assign asset ${asset.name}`, 'Close', { duration: 3000 });
+          return of(null);
+        })
+      ).subscribe(() => {
+        this.snackBar.open(`${asset.name} assigned successfully`, 'Close', { duration: 3000 });
+        this.loadAssets();
+      });
+    }
+  }
+
+  bulkAssign(assets: Asset[]): void {
+    const userId = prompt(`Enter User ID to assign ${assets.length} selected assets to:`);
+    if (userId) {
+      this.loading = true;
+      const assignPromises = assets.map(asset => 
+        this.assetService.assignAsset(asset.id, +userId).pipe(
+          catchError(err => {
+            this.snackBar.open(`Failed to assign asset ${asset.name}`, 'Close', { duration: 3000 });
+            return of(null);
+          })
+        ).toPromise()
+      );
+
+      Promise.all(assignPromises).then(() => {
+        this.snackBar.open(`${assets.length} assets assigned successfully`, 'Close', { duration: 3000 });
+        this.selection.clear();
+        this.loadAssets();
+      }).finally(() => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      });
+    }
   }
 
   checkOut(asset: Asset): void {
-    // Handle asset checkout
-    this.snackBar.open('Check out functionality to be implemented', 'Close', { duration: 3000 });
+    if (confirm(`Are you sure you want to unassign ${asset.name}?`)) {
+      this.assetService.unassignAsset(asset.id).pipe(
+        takeUntil(this.destroy$),
+        catchError(err => {
+          this.snackBar.open(`Failed to unassign asset ${asset.name}`, 'Close', { duration: 3000 });
+          return of(null);
+        })
+      ).subscribe(() => {
+        this.snackBar.open(`${asset.name} unassigned successfully`, 'Close', { duration: 3000 });
+        this.loadAssets();
+      });
+    }
   }
 
   // Export methods

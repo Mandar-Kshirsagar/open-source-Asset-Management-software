@@ -364,11 +364,13 @@ export class AssetFormComponent implements OnInit {
     this.assetService.getAssetCategories().subscribe({
       next: (categories: string[]) => {
         this.categories = categories;
+        console.log('Loaded categories:', this.categories);
       },
       error: (error: any) => {
         console.error('Error loading categories:', error);
         // Fallback categories
         this.categories = ['Computer', 'Phone', 'Tablet', 'Monitor', 'Printer', 'Furniture', 'Vehicle', 'Other'];
+        console.log('Using fallback categories:', this.categories);
       }
     });
   }
