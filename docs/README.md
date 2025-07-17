@@ -240,3 +240,5 @@ We welcome contributions to improve our documentation! Here's how you can help:
 ---
 
 **Note**: This documentation is actively maintained and updated. For the most current information, always refer to the latest version in the repository.
+
+Contact: mandarkshirsagar1@outlook.com
