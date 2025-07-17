@@ -1,16 +1,59 @@
 .settings-container {
-  max-width: 500px;
+  max-width: 600px;
   margin: 2rem auto;
-  h2 {
-    text-align: center;
-    margin-bottom: 1.5rem;
-  }
+  padding: 20px;
+
   mat-card {
-    padding: 1rem;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
   }
-  .profile-update-placeholder {
-    margin-top: 2rem;
-    text-align: center;
-    color: #888;
+
+  mat-card-title {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: #3f51b5; /* Primary color */
+  }
+
+  .form-group {
+    margin-bottom: 15px;
+  }
+
+  mat-form-field {
+    width: 100%;
+  }
+
+  .settings-divider {
+    margin: 30px 0;
+  }
+
+  h3 {
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    color: #333;
+  }
+
+  .logo-upload-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+
+    .company-logo-preview {
+      max-width: 150px;
+      max-height: 150px;
+      border: 1px solid #ddd;
+      padding: 5px;
+      border-radius: 4px;
+      background-color: #f9f9f9;
+    }
+
+    button {
+      margin-right: 10px; /* Space between buttons */
+    }
+  }
+
+  button[type="submit"] {
+    margin-top: 20px;
   }
 } 

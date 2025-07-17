@@ -52,20 +52,7 @@ import { ChatbotService, ChatMessage } from '../services/chatbot.service';
                 <ng-container *ngIf="msg.role === 'user'">{{ msg.content }}</ng-container>
                 <ng-container *ngIf="msg.role === 'assistant'">{{ msg.content }}</ng-container>
               </div>
-              <div *ngIf="msg.sqlQuery" class="sql-query">
-                <div class="sql-header">
-                  <mat-icon>code</mat-icon>
-                  <span>Generated SQL:</span>
-                </div>
-                <pre class="sql-code">{{ msg.sqlQuery }}</pre>
-              </div>
-              <div *ngIf="msg.queryResult" class="query-result">
-                <div class="result-header">
-                  <mat-icon>table_view</mat-icon>
-                  <span>Query Results:</span>
-                </div>
-                <pre class="result-data">{{ formatResult(msg.queryResult) }}</pre>
-              </div>
+              
             </div>
           </div>
           <div *ngIf="loading" class="loading-msg">

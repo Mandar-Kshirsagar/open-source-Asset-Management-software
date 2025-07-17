@@ -24,26 +24,28 @@ builder.Services.AddControllers()
 builder.Services.AddMemoryCache();
 
 // Configure Rate Limiting
+var rateLimitingSettings = builder.Configuration.GetSection("RateLimitingSettings");
+var globalLimiterSettings = rateLimitingSettings.GetSection("GlobalLimiter");
+var authLimiterSettings = rateLimitingSettings.GetSection("AuthLimiter");
+
 builder.Services.AddRateLimiter(options =>
 {
-    // Global rate limiter
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
         RateLimitPartition.GetFixedWindowLimiter(
             partitionKey: context.User.Identity?.Name ?? context.Request.Headers.Host.ToString(),
             factory: partition => new FixedWindowRateLimiterOptions
             {
                 AutoReplenishment = true,
-                PermitLimit = 100,
-                Window = TimeSpan.FromMinutes(1)
+                PermitLimit = globalLimiterSettings.GetValue<int>("PermitLimit"),
+                Window = globalLimiterSettings.GetValue<TimeSpan>("Window")
             }));
 
-    // Specific rate limiter for authentication endpoints
     options.AddFixedWindowLimiter("Auth", limiterOptions =>
     {
-        limiterOptions.PermitLimit = 5;
-        limiterOptions.Window = TimeSpan.FromMinutes(15);
+        limiterOptions.PermitLimit = authLimiterSettings.GetValue<int>("PermitLimit");
+        limiterOptions.Window = authLimiterSettings.GetValue<TimeSpan>("Window");
         limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-        limiterOptions.QueueLimit = 2;
+        limiterOptions.QueueLimit = authLimiterSettings.GetValue<int>("QueueLimit");
     });
 });
 
@@ -100,6 +102,7 @@ builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<RefreshTokenService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<AssetService>();
+builder.Services.AddScoped<AppSettingService>();
 
 // Register Chatbot Services
 builder.Services.AddScoped<IDatabaseSchemaService, DatabaseSchemaService>();
@@ -141,33 +144,48 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 else
 {
+    // Global exception handling middleware
+    app.UseMiddleware<GlobalExceptionHandler>();
+
     // Enable HTTPS redirection in production
     app.UseHttpsRedirection();
 }
 
 app.UseCors("AllowAngularApp");
 
+// Add security headers middleware
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+    context.Response.Headers.Append("X-Frame-Options", "DENY");
+    context.Response.Headers.Append("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self';");
+    await next();
+});
+
 // Enable rate limiting
 app.UseRateLimiter();
 
-// Global exception handling middleware
-app.UseMiddleware<GlobalExceptionHandler>();
+app.UseStaticFiles();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
-// Ensure database is created and migrations are applied
-using (var scope = app.Services.CreateScope())
+if (app.Environment.IsDevelopment())
 {
-    var context = scope.ServiceProvider.GetRequiredService<AMSContext>();
-    context.Database.Migrate();
+    // Ensure database is created and migrations are applied in development
+    using (var scope = app.Services.CreateScope())
+    {
+        var context = scope.ServiceProvider.GetRequiredService<AMSContext>();
+        context.Database.Migrate();
+    }
 }
 
 app.Run();

@@ -234,12 +234,12 @@ namespace AMS.Api.Services
         {
             return tableName.ToLower() switch
             {
-                "users" => "Stores user account information for the AMS system",
-                "assets" => "Contains all asset information including details, status, and assignments",
-                "assethistories" => "Tracks historical changes and movements of assets",
-                "maintenancerecords" => "Records maintenance activities performed on assets",
-                "refreshtokens" => "Stores JWT refresh tokens for authentication",
-                _ => $"Database table: {tableName}"
+                "users" => "Manages all user accounts, including their roles (Admin, Manager, User), contact information, and login history.",
+                "assets" => "Stores comprehensive details about all physical and digital assets, such as laptops, monitors, and software licenses. It tracks their status (e.g., Available, Assigned, Maintenance), location, and financial information.",
+                "assethistories" => "Logs every significant event and change related to an asset, including assignments, unassignments, status changes, and location transfers.",
+                "maintenancerecords" => "Keeps track of all maintenance activities performed on assets, including scheduled maintenance, repairs, and service dates.",
+                "refreshtokens" => "Used internally for secure user authentication, managing long-lived sessions.",
+                _ => $"Information about {tableName} table."
             };
         }
 
@@ -249,13 +249,28 @@ namespace AMS.Api.Services
             
             return key switch
             {
-                "assets.assettag" => "Unique identifier tag for the asset",
-                "assets.assignedtouserid" => "ID of user currently assigned to this asset",
-                "assets.status" => "Current status (Available, InUse, UnderMaintenance, Disposed)",
-                "assets.purchaseprice" => "Original purchase price of the asset",
-                "users.role" => "User role (Admin, Manager, Employee)",
-                "maintenancerecords.maintenancetype" => "Type of maintenance (Preventive, Corrective, Emergency)",
-                "assethistories.actiontype" => "Type of action (Assigned, Returned, Updated, etc.)",
+                "assets.id" => "Unique identifier for each asset.",
+                "assets.name" => "The common name of the asset (e.g., 'Dell Latitude Laptop').",
+                "assets.assettag" => "A unique, internal tag used to identify the asset within the system (e.g., 'LAPTOP001').",
+                "assets.category" => "The type or classification of the asset (e.g., 'Laptop', 'Monitor', 'Software').",
+                "assets.status" => "The current operational status of the asset (e.g., 'Available', 'Assigned', 'Maintenance', 'Retired').",
+                "assets.location" => "The physical or logical location where the asset is currently situated.",
+                "assets.assignedtouserid" => "The ID of the user to whom the asset is currently assigned.",
+                "assets.purchaseprice" => "The original cost of the asset at the time of purchase.",
+                "users.id" => "Unique identifier for each user.",
+                "users.username" => "The unique username used for logging into the system.",
+                "users.email" => "The primary email address of the user.",
+                "users.firstname" => "The first name of the user.",
+                "users.lastname" => "The last name of the user.",
+                "users.role" => "The role of the user within the system (e.g., 'Admin', 'Manager', 'User').",
+                "maintenancerecords.id" => "Unique identifier for each maintenance record.",
+                "maintenancerecords.assetid" => "The ID of the asset on which maintenance was performed.",
+                "maintenancerecords.maintenancetype" => "The type of maintenance performed (e.g., 'Preventive', 'Repair', 'Upgrade').",
+                "maintenancerecords.cost" => "The cost associated with the maintenance activity.",
+                "assethistories.id" => "Unique identifier for each asset history record.",
+                "assethistories.assetid" => "The ID of the asset to which this history record pertains.",
+                "assethistories.action" => "The type of action recorded (e.g., 'Assigned', 'Unassigned', 'Status Change').",
+                "assethistories.timestamp" => "The date and time when the action occurred.",
                 _ => ""
             };
         }

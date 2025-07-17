@@ -14,6 +14,7 @@ namespace AMS.Api.Data
         public DbSet<AssetHistory> AssetHistories { get; set; }
         public DbSet<MaintenanceRecord> MaintenanceRecords { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<AppSetting> AppSettings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -135,7 +136,7 @@ namespace AMS.Api.Data
                     SerialNumber = "DL123456789",
                     PurchasePrice = 1299.99m,
                     PurchaseDate = DateTime.UtcNow.AddMonths(-6),
-                    Status = "Available",
+                    Status = (AssetStatus)Enum.Parse(typeof(AssetStatus), "Available"),
                     Location = "IT Department",
                     Condition = "Excellent",
                     CreatedAt = DateTime.UtcNow
@@ -152,11 +153,19 @@ namespace AMS.Api.Data
                     SerialNumber = "HP987654321",
                     PurchasePrice = 299.99m,
                     PurchaseDate = DateTime.UtcNow.AddMonths(-3),
-                    Status = "Available",
+                    Status = (AssetStatus)Enum.Parse(typeof(AssetStatus), "Available"),
                     Location = "Print Room",
                     Condition = "Good",
                     CreatedAt = DateTime.UtcNow
                 }
+            );
+
+            // Seed application settings
+            modelBuilder.Entity<AppSetting>().HasData(
+                new AppSetting { Key = "CompanyName", Value = "Asset Management System" },
+                new AppSetting { Key = "CompanyLogoUrl", Value = "/images/default_logo.png" }, // Default logo path
+                new AppSetting { Key = "DefaultTheme", Value = "light" },
+                new AppSetting { Key = "DefaultLanguage", Value = "en-US" }
             );
         }
     }

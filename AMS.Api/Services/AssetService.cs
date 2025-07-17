@@ -4,6 +4,7 @@ using AMS.Api.Data;
 using AMS.Api.Models;
 using AMS.Api.DTOs;
 using AutoMapper;
+using AMS.Api.Exceptions;
 
 namespace AMS.Api.Services
 {
@@ -44,7 +45,10 @@ namespace AMS.Api.Services
 
                 if (!string.IsNullOrEmpty(filter.Status))
                 {
-                    query = query.Where(a => a.Status == filter.Status);
+                    if (Enum.TryParse<AssetStatus>(filter.Status, true, out var statusEnum))
+                    {
+                        query = query.Where(a => a.Status == statusEnum);
+                    }
                 }
 
                 if (!string.IsNullOrEmpty(filter.Location))
@@ -94,7 +98,7 @@ namespace AMS.Api.Services
                 .Include(a => a.AssignedToUser)
                 .FirstOrDefaultAsync(a => a.Id == id);
 
-            return asset != null ? _mapper.Map<AssetDto>(asset) : null;
+            return asset != null ? _mapper.Map<AssetDto>(asset) : throw new NotFoundException(nameof(Asset), id);
         }
 
         public async Task<AssetDto> CreateAssetAsync(CreateAssetDto createAssetDto)
@@ -119,7 +123,7 @@ namespace AMS.Api.Services
                 WarrantyExpiryDate = createAssetDto.WarrantyExpiryDate,
                 Location = createAssetDto.Location,
                 Condition = createAssetDto.Condition,
-                Status = "Available",
+                Status = AssetStatus.Available,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -138,7 +142,7 @@ namespace AMS.Api.Services
             var asset = await _context.Assets.FindAsync(id);
             if (asset == null)
             {
-                return null;
+                throw new NotFoundException(nameof(Asset), id);
             }
 
             asset.Name = updateAssetDto.Name;
@@ -196,7 +200,7 @@ namespace AMS.Api.Services
                 return false;
             }
 
-            if (asset.Status != "Available")
+            if (asset.Status != AssetStatus.Available)
             {
                 throw new InvalidOperationException("Asset is not available for assignment");
             }
@@ -205,7 +209,7 @@ namespace AMS.Api.Services
             var previousLocation = asset.Location;
 
             asset.AssignedToUserId = userId;
-            asset.Status = "Assigned";
+            asset.Status = AssetStatus.Assigned;
             asset.LastUpdatedAt = DateTime.UtcNow;
 
             // Create history record
@@ -215,8 +219,8 @@ namespace AMS.Api.Services
                 UserId = userId,
                 Action = "Assigned",
                 Description = $"Asset assigned to {user.FirstName} {user.LastName}",
-                PreviousStatus = previousStatus,
-                NewStatus = asset.Status,
+                PreviousStatus = previousStatus.ToString(),
+                NewStatus = asset.Status.ToString(),
                 PreviousLocation = previousLocation,
                 NewLocation = asset.Location,
                 Timestamp = DateTime.UtcNow
@@ -241,7 +245,7 @@ namespace AMS.Api.Services
             var assignedUser = asset.AssignedToUserId;
 
             asset.AssignedToUserId = null;
-            asset.Status = "Available";
+            asset.Status = AssetStatus.Available;
             asset.LastUpdatedAt = DateTime.UtcNow;
 
             // Create history record
@@ -251,8 +255,8 @@ namespace AMS.Api.Services
                 UserId = assignedUser,
                 Action = "Unassigned",
                 Description = "Asset unassigned from user",
-                PreviousStatus = previousStatus,
-                NewStatus = asset.Status,
+                PreviousStatus = previousStatus.ToString(),
+                NewStatus = asset.Status.ToString(),
                 PreviousLocation = previousLocation,
                 NewLocation = asset.Location,
                 Timestamp = DateTime.UtcNow
@@ -313,9 +317,9 @@ namespace AMS.Api.Services
         public async Task<DashboardStatsDto> GetDashboardStatsAsync()
         {
             var totalAssets = await _context.Assets.CountAsync();
-            var availableAssets = await _context.Assets.CountAsync(a => a.Status == "Available");
-            var assignedAssets = await _context.Assets.CountAsync(a => a.Status == "Assigned");
-            var maintenanceAssets = await _context.Assets.CountAsync(a => a.Status == "Maintenance");
+            var availableAssets = await _context.Assets.CountAsync(a => a.Status == AssetStatus.Available);
+            var assignedAssets = await _context.Assets.CountAsync(a => a.Status == AssetStatus.Assigned);
+            var maintenanceAssets = await _context.Assets.CountAsync(a => a.Status == AssetStatus.Maintenance);
 
             var recentAssets = await _context.Assets
                 .OrderByDescending(a => a.CreatedAt)
@@ -326,7 +330,7 @@ namespace AMS.Api.Services
                     Name = a.Name,
                     AssetTag = a.AssetTag,
                     Category = a.Category,
-                    Status = a.Status,
+                    Status = a.Status.ToString(),
                     Location = a.Location
                 })
                 .ToListAsync();

@@ -29,16 +29,11 @@ namespace AMS.Api.Services
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Username == loginDto.Username && u.IsActive);
 
-            if (user == null)
+            if (user == null || !BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash))
             {
-                _logger.LogWarning("Login attempt failed: User not found - {Username}", loginDto.Username);
-                return null;
-            }
-
-            var passwordValid = BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash);
-            if (!passwordValid)
-            {
-                _logger.LogWarning("Login attempt failed: Invalid password for user - {Username}", loginDto.Username);
+                // Introduce a small delay to mitigate user enumeration attacks
+                await Task.Delay(new Random().Next(50, 200)); 
+                _logger.LogWarning("Login attempt failed: Invalid credentials provided.");
                 return null;
             }
 
@@ -100,9 +95,11 @@ namespace AMS.Api.Services
             return user != null ? _mapper.Map<UserDto>(user) : null;
         }
 
-        public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
+        public async Task<IEnumerable<UserDto>> GetAllUsersAsync(bool includeInactive = false)
         {
-            var users = await _context.Users.Where(u => u.IsActive).ToListAsync();
+            var users = includeInactive 
+                ? await _context.Users.ToListAsync()
+                : await _context.Users.Where(u => u.IsActive).ToListAsync();
             return _mapper.Map<IEnumerable<UserDto>>(users);
         }
 
@@ -182,6 +179,32 @@ namespace AMS.Api.Services
             await _context.SaveChangesAsync();
 
             _logger.LogInformation("User deactivated: {Username}", user.Username);
+
+            return true;
+        }
+
+        public async Task<bool> UpdateUserPasswordAsync(int userId, string currentPassword, string newPassword)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+            {
+                _logger.LogWarning("Password change failed: User not found - {UserId}", userId);
+                return false;
+            }
+
+            if (!BCrypt.Net.BCrypt.Verify(currentPassword, user.PasswordHash))
+            {
+                _logger.LogWarning("Password change failed: Invalid current password for user - {UserId}", userId);
+                return false;
+            }
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            await _context.SaveChangesAsync();
+
+            // Revoke all refresh tokens for the user to force re-authentication with the new password
+            await _refreshTokenService.RevokeAllUserTokensAsync(userId, "Password change");
+
+            _logger.LogInformation("User password updated: {Username}", user.Username);
 
             return true;
         }

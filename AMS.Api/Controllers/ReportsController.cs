@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using AMS.Api.Data;
 using AMS.Api.DTOs;
+using AMS.Api.Models;
 
 namespace AMS.Api.Controllers
 {
@@ -25,10 +26,10 @@ namespace AMS.Api.Controllers
             {
                 var totalAssets = await _context.Assets.CountAsync();
                 var totalUsers = await _context.Users.CountAsync();
-                var assignedAssets = await _context.Assets.CountAsync(a => a.Status == "Assigned");
-                var availableAssets = await _context.Assets.CountAsync(a => a.Status == "Available");
-                var maintenanceAssets = await _context.Assets.CountAsync(a => a.Status == "Maintenance");
-                var retiredAssets = await _context.Assets.CountAsync(a => a.Status == "Retired");
+                var assignedAssets = await _context.Assets.CountAsync(a => a.Status == AssetStatus.Assigned);
+                var availableAssets = await _context.Assets.CountAsync(a => a.Status == AssetStatus.Available);
+                var maintenanceAssets = await _context.Assets.CountAsync(a => a.Status == AssetStatus.Maintenance);
+                var retiredAssets = await _context.Assets.CountAsync(a => a.Status == AssetStatus.Retired);
 
                 var totalValue = await _context.Assets.SumAsync(a => a.PurchasePrice);
                 var upcomingMaintenance = await _context.MaintenanceRecords
@@ -82,9 +83,9 @@ namespace AMS.Api.Controllers
                         Category = g.Key,
                         Count = g.Count(),
                         TotalValue = g.Sum(a => a.PurchasePrice),
-                        AssignedCount = g.Count(a => a.Status == "Assigned"),
-                        AvailableCount = g.Count(a => a.Status == "Available"),
-                        MaintenanceCount = g.Count(a => a.Status == "Maintenance")
+                        AssignedCount = g.Count(a => a.Status == AMS.Api.Models.AssetStatus.Assigned),
+                        AvailableCount = g.Count(a => a.Status == AMS.Api.Models.AssetStatus.Available),
+                        MaintenanceCount = g.Count(a => a.Status == AMS.Api.Models.AssetStatus.Maintenance)
                     })
                     .OrderByDescending(x => x.Count)
                     .ToListAsync();
@@ -109,9 +110,9 @@ namespace AMS.Api.Controllers
                         Location = g.Key,
                         Count = g.Count(),
                         TotalValue = g.Sum(a => a.PurchasePrice),
-                        AssignedCount = g.Count(a => a.Status == "Assigned"),
-                        AvailableCount = g.Count(a => a.Status == "Available"),
-                        MaintenanceCount = g.Count(a => a.Status == "Maintenance")
+                        AssignedCount = g.Count(a => a.Status == AMS.Api.Models.AssetStatus.Assigned),
+                        AvailableCount = g.Count(a => a.Status == AMS.Api.Models.AssetStatus.Available),
+                        MaintenanceCount = g.Count(a => a.Status == AMS.Api.Models.AssetStatus.Maintenance)
                     })
                     .OrderByDescending(x => x.Count)
                     .ToListAsync();

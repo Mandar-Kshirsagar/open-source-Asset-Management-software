@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
+import { ApplicationConfig, ErrorHandler, provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter, withPreloading, PreloadingStrategy, Route } from '@angular/router';
 import { provideHttpClient, withInterceptors, withFetch, withNoXsrfProtection } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
@@ -10,6 +10,8 @@ import { Observable, of } from 'rxjs';
 import { routes } from './app.routes';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
 
+import { GlobalErrorHandler } from './core/global-error-handler';
+
 // Selective preloading strategy for better performance
 @Injectable({ providedIn: 'root' })
 export class SelectivePreloadingStrategy implements PreloadingStrategy {
@@ -18,10 +20,8 @@ export class SelectivePreloadingStrategy implements PreloadingStrategy {
     const highPriorityRoutes = ['dashboard', 'assets'];
     
     if (route.path && highPriorityRoutes.includes(route.path)) {
-      console.log('Preloading: ' + route.path);
       return load();
     } else {
-      console.log('Skipping preload of: ' + route.path);
       return of(null);
     }
   }
@@ -29,13 +29,12 @@ export class SelectivePreloadingStrategy implements PreloadingStrategy {
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideBrowserGlobalErrorListeners(),
+    { provide: ErrorHandler, useClass: GlobalErrorHandler },
     provideZonelessChangeDetection(),
     provideRouter(routes, withPreloading(SelectivePreloadingStrategy)),
     provideHttpClient(
       withInterceptors([AuthInterceptor]),
-      withFetch(),
-      withNoXsrfProtection()
+      withFetch()
     ),
     provideAnimations(),
     provideClientHydration(),

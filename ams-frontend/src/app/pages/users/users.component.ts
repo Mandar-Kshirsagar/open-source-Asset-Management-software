@@ -23,9 +23,7 @@ import { ConfirmDialogComponent, ConfirmDialogData } from '../../components/conf
     RouterModule,
     ReactiveFormsModule,
     FormsModule,
-    SharedMaterialModule,
-    HeaderComponent,
-    BreadcrumbComponent
+    SharedMaterialModule
   ],
   template: `
     <div class="users-container">
@@ -37,7 +35,7 @@ import { ConfirmDialogComponent, ConfirmDialogData } from '../../components/conf
           <div class="filter-left">
             <mat-form-field appearance="outline" class="search-input">
               <mat-label>Search Users</mat-label>
-              <input matInput [(ngModel)]="searchTerm" (input)="onSearch()" placeholder="Search by name or email...">
+              <input matInput [(ngModel)]="searchTerm" name="searchTerm" (input)="onSearch()" placeholder="Search by name or email...">
               <mat-icon matSuffix>search</mat-icon>
             </mat-form-field>
           </div>
@@ -45,7 +43,7 @@ import { ConfirmDialogComponent, ConfirmDialogData } from '../../components/conf
           <div class="filter-right">
             <mat-form-field appearance="outline" class="filter-select">
               <mat-label>Filter by Role</mat-label>
-              <mat-select [(ngModel)]="selectedRole" (selectionChange)="onRoleFilter()">
+              <mat-select [(ngModel)]="selectedRole" name="selectedRole" (selectionChange)="onRoleFilter()">
                 <mat-option value="">All Roles</mat-option>
                 <mat-option value="Admin">Admin</mat-option>
                 <mat-option value="Manager">Manager</mat-option>

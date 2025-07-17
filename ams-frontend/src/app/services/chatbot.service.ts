@@ -81,7 +81,7 @@ export interface ChatMessage {
   providedIn: 'root'
 })
 export class ChatbotService {
-  private apiUrl = `${environment.apiUrl}/api/chatbot`;
+  private apiUrl = `${environment.apiUrl}/chatbot`;
   private sessionId: string = '';
   private messagesSubject = new BehaviorSubject<ChatMessage[]>([]);
   

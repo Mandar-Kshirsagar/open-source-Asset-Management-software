@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using AMS.Api.Models;
 
 namespace AMS.Api.DTOs
 {
@@ -15,7 +16,7 @@ namespace AMS.Api.DTOs
         public decimal PurchasePrice { get; set; }
         public DateTime PurchaseDate { get; set; }
         public DateTime? WarrantyExpiryDate { get; set; }
-        public string Status { get; set; } = string.Empty;
+        public AssetStatus Status { get; set; }
         public string Location { get; set; } = string.Empty;
         public string Condition { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
@@ -96,8 +97,7 @@ namespace AMS.Api.DTOs
         
         public DateTime? WarrantyExpiryDate { get; set; }
         
-        [StringLength(50, ErrorMessage = "Status cannot exceed 50 characters")]
-        public string Status { get; set; } = string.Empty;
+        public AssetStatus Status { get; set; }
         
         [StringLength(100, ErrorMessage = "Location cannot exceed 100 characters")]
         public string Location { get; set; } = string.Empty;

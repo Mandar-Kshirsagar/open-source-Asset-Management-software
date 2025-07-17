@@ -142,12 +142,33 @@ namespace AMS.Api.Services
 
         private async Task<ChatbotResponse> HandleSchemaInquiryAsync(string message, string sessionId)
         {
-            var schemaDescription = await _schemaService.GetSchemaDescriptionForAIAsync();
-            var response = "Here's information about our Asset Management System database:\n\n" + schemaDescription;
+            var schema = await _schemaService.GetDatabaseSchemaAsync();
+            var responseBuilder = new System.Text.StringBuilder();
+
+            responseBuilder.AppendLine("Our Asset Management System database contains the following key tables:");
+
+            foreach (var table in schema.Tables)
+            {
+                responseBuilder.AppendLine($"- **{table.TableName}**: {table.Description}");
+                if (table.Columns.Any())
+                {
+                    responseBuilder.AppendLine("  It contains information such as:");
+                    foreach (var column in table.Columns.Take(3)) // List first 3 columns
+                    {
+                        responseBuilder.AppendLine($"    • {column.ColumnName} ({column.DataType})");
+                    }
+                    if (table.Columns.Count > 3)
+                    {
+                        responseBuilder.AppendLine($"    ... and {table.Columns.Count - 3} more fields.");
+                    }
+                }
+            }
+
+            responseBuilder.AppendLine(Environment.NewLine + "What specific information are you looking for?");
             
             return new ChatbotResponse
             {
-                Response = response,
+                Response = responseBuilder.ToString(),
                 SessionId = sessionId,
                 IsSuccessful = true
             };
@@ -436,17 +457,119 @@ Just ask your question in natural language, and I'll generate and execute the ap
 
         private string GenerateNaturalLanguageResponse(QueryIntent intent, SqlQueryResult queryResult)
         {
-            if (queryResult.Data == null)
+            if (queryResult.Data == null || !(queryResult.Data as System.Collections.IEnumerable)?.Cast<object>().Any() == true)
+            {
                 return "The query executed successfully but returned no results.";
+            }
+
+            var data = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(JsonSerializer.Serialize(queryResult.Data));
 
             if (intent.Operation == "COUNT")
             {
-                var countData = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(JsonSerializer.Serialize(queryResult.Data));
-                var count = countData?.FirstOrDefault()?.GetValueOrDefault("Count", 0) ?? 0;
-                return $"I found {count} records matching your criteria.";
+                var count = data?.FirstOrDefault()?.GetValueOrDefault("Count", 0) ?? 0;
+                var entityName = intent.Tables.Any() ? intent.Tables.First() : "records";
+                return $"There are {count} {entityName.ToLower()} matching your criteria.";
             }
 
-            return $"I found {queryResult.RowCount} records. Here are the results:";
+            if (intent.Operation == "SUM" || intent.Operation == "AVG")
+            {
+                var result = data?.FirstOrDefault()?.Values.FirstOrDefault();
+                var operation = intent.Operation == "SUM" ? "total" : "average";
+                var entityName = intent.Tables.Any() ? intent.Tables.First() : "value";
+                return $"The {operation} {entityName.ToLower()} is {result:C}.";
+            }
+
+            // For SELECT queries, summarize the results
+            var responseBuilder = new System.Text.StringBuilder();
+
+            if (queryResult.RowCount == 1)
+            {
+                var record = data.First();
+                responseBuilder.AppendLine("Here is the record I found:");
+                
+                // Attempt to make a more human-readable sentence for a single record
+                if (intent.Tables.Contains("Assets"))
+                {
+                    var name = record.GetValueOrDefault("Name", "an asset");
+                    var status = record.GetValueOrDefault("Status", "unknown");
+                    var location = record.GetValueOrDefault("Location", "unknown");
+                    responseBuilder.AppendLine($"It's {name} with status {status} located at {location}.");
+                }
+                else if (intent.Tables.Contains("Users"))
+                {
+                    var firstName = record.GetValueOrDefault("FirstName", "a user");
+                    var lastName = record.GetValueOrDefault("LastName", "");
+                    var email = record.GetValueOrDefault("Email", "");
+                    responseBuilder.AppendLine($"It's {firstName} {lastName} with email {email}.");
+                }
+                else if (intent.Tables.Contains("MaintenanceRecords"))
+                {
+                    var title = record.GetValueOrDefault("Title", "a maintenance record");
+                    var assetName = record.GetValueOrDefault("AssetName", "an asset");
+                    var scheduledDate = record.GetValueOrDefault("ScheduledDate", "");
+                    responseBuilder.AppendLine($"It's a maintenance record for {assetName} titled '{title}' scheduled on {scheduledDate}.");
+                }
+                else if (intent.Tables.Contains("AssetHistories"))
+                {
+                    var action = record.GetValueOrDefault("Action", "an action");
+                    var assetName = record.GetValueOrDefault("AssetName", "an asset");
+                    var timestamp = record.GetValueOrDefault("Timestamp", "");
+                    responseBuilder.AppendLine($"An action '{action}' was performed on {assetName} at {timestamp}.");
+                }
+                else
+                {
+                    foreach (var kvp in record)
+                    {
+                        responseBuilder.AppendLine($"- {kvp.Key}: {kvp.Value}");
+                    }
+                }
+            }
+            else
+            {
+                responseBuilder.AppendLine($"I found {queryResult.RowCount} records. Here's a summary of a few:");
+                foreach (var record in data.Take(3))
+                {
+                    responseBuilder.AppendLine("-");
+                    // Attempt to make a more human-readable sentence for multiple records
+                    if (intent.Tables.Contains("Assets"))
+                    {
+                        var name = record.GetValueOrDefault("Name", "an asset");
+                        var status = record.GetValueOrDefault("Status", "unknown");
+                        responseBuilder.AppendLine($"  {name} (Status: {status})");
+                    }
+                    else if (intent.Tables.Contains("Users"))
+                    {
+                        var firstName = record.GetValueOrDefault("FirstName", "a user");
+                        var lastName = record.GetValueOrDefault("LastName", "");
+                        responseBuilder.AppendLine($"  {firstName} {lastName}");
+                    }
+                    else if (intent.Tables.Contains("MaintenanceRecords"))
+                    {
+                        var title = record.GetValueOrDefault("Title", "a maintenance record");
+                        var assetName = record.GetValueOrDefault("AssetName", "an asset");
+                        responseBuilder.AppendLine($"  Maintenance for {assetName}: '{title}'");
+                    }
+                    else if (intent.Tables.Contains("AssetHistories"))
+                    {
+                        var action = record.GetValueOrDefault("Action", "an action");
+                        var assetName = record.GetValueOrDefault("AssetName", "an asset");
+                        responseBuilder.AppendLine($"  Action '{action}' on {assetName}");
+                    }
+                    else
+                    {
+                        foreach (var kvp in record)
+                        {
+                            responseBuilder.AppendLine($"  {kvp.Key}: {kvp.Value}");
+                        }
+                    }
+                }
+                if (queryResult.RowCount > 3)
+                {
+                    responseBuilder.AppendLine($"... and {queryResult.RowCount - 3} more records. Please ask if you need more details.");
+                }
+            }
+
+            return responseBuilder.ToString();
         }
     }
 

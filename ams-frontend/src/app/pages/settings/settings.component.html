@@ -1,18 +1,63 @@
 <div class="settings-container">
-  <h2>Settings</h2>
   <mat-card>
+    <mat-card-header>
+      <mat-card-title>Application Settings</mat-card-title>
+    </mat-card-header>
     <mat-card-content>
-      <mat-slide-toggle [(ngModel)]="darkMode" (change)="toggleDarkMode()">
-        Dark Mode
-      </mat-slide-toggle>
-      <br />
-      <mat-slide-toggle [(ngModel)]="notifications" (change)="toggleNotifications()">
-        Enable Notifications
-      </mat-slide-toggle>
-      <br />
-      <div class="profile-update-placeholder">
-        <h3>Profile Update</h3>
-        <p>Profile update functionality coming soon...</p>
+      <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()">
+        <div class="form-group">
+          <mat-form-field appearance="outline">
+            <mat-label>Company Name</mat-label>
+            <input matInput formControlName="companyName" placeholder="Your Company Name">
+            <mat-error *ngIf="settingsForm.get('companyName')?.hasError('required')">
+              Company Name is required
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-group">
+          <mat-form-field appearance="outline">
+            <mat-label>Default Theme</mat-label>
+            <mat-select formControlName="defaultTheme">
+              <mat-option value="light">Light</mat-option>
+              <mat-option value="dark">Dark</mat-option>
+            </mat-select>
+            <mat-error *ngIf="settingsForm.get('defaultTheme')?.hasError('required')">
+              Default Theme is required
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-group">
+          <mat-form-field appearance="outline">
+            <mat-label>Default Language</mat-label>
+            <mat-select formControlName="defaultLanguage">
+              <mat-option value="en-US">English (US)</mat-option>
+              <mat-option value="es-ES">Spanish (ES)</mat-option>
+            </mat-select>
+            <mat-error *ngIf="settingsForm.get('defaultLanguage')?.hasError('required')">
+              Default Language is required
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <button mat-raised-button color="primary" type="submit" [disabled]="settingsForm.invalid">
+          Save Settings
+        </button>
+      </form>
+
+      <mat-divider class="settings-divider"></mat-divider>
+
+      <h3>Company Logo</h3>
+      <div class="logo-upload-section">
+        <img *ngIf="appSettings?.companyLogoUrl" [src]="appSettings?.companyLogoUrl" alt="Company Logo" class="company-logo-preview">
+        <input type="file" (change)="onFileSelected($event)" #fileInput hidden>
+        <button mat-raised-button color="accent" (click)="fileInput.click()">
+          Select Logo
+        </button>
+        <button mat-raised-button color="primary" (click)="uploadLogo()" [disabled]="!selectedFile">
+          Upload Logo
+        </button>
       </div>
     </mat-card-content>
   </mat-card>

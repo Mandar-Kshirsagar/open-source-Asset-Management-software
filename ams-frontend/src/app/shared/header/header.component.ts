@@ -1,9 +1,11 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { SharedMaterialModule } from '../material.module';
 import { AuthService } from '../../services/auth.service';
 import { User } from '../../models/user.model';
+import { AppConfigService, AppSettings } from '../../services/app-config.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-header',
@@ -15,8 +17,9 @@ import { User } from '../../models/user.model';
   ],
   template: `
     <mat-toolbar color="primary" class="modern-toolbar">
-      <mat-icon class="app-logo">inventory</mat-icon>
-      <span class="app-title">Asset Manager</span>
+      <img *ngIf="appSettings?.companyLogoUrl" [src]="appSettings?.companyLogoUrl" alt="Company Logo" class="app-logo-img">
+      <mat-icon class="app-logo" *ngIf="!appSettings?.companyLogoUrl">inventory</mat-icon>
+      <span class="app-title">{{ appSettings?.companyName || 'Asset Manager' }}</span>
       <span class="toolbar-spacer"></span>
       
       <!-- Navigation Icons -->
@@ -147,9 +150,14 @@ import { User } from '../../models/user.model';
         display: none;
       }
     }
-  `]
+
+    .app-logo-img {
+      height: 40px; /* Adjust as needed */
+      margin-right: 8px;
+    }`
+  ]
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit, OnDestroy {
   @Input() currentUser: User | null = null;
   @Input() showSearch = false;
   @Input() searchTerm = '';
@@ -160,7 +168,20 @@ export class HeaderComponent {
   @Output() searchChange = new EventEmitter<string>();
   @Output() actionClick = new EventEmitter<void>();
 
-  constructor(private authService: AuthService) {}
+  appSettings: AppSettings | null = null;
+  private appSettingsSubscription: Subscription | undefined;
+
+  constructor(private authService: AuthService, private appConfigService: AppConfigService) {}
+
+  ngOnInit(): void {
+    this.appSettingsSubscription = this.appConfigService.appSettings$.subscribe(settings => {
+      this.appSettings = settings;
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.appSettingsSubscription?.unsubscribe();
+  }
 
   onSearchChange(event: any): void {
     this.searchChange.emit(event.target.value);

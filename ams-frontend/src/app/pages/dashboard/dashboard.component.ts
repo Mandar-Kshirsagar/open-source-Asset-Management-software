@@ -16,9 +16,7 @@ import { ChangeDetectorRef } from '@angular/core';
   imports: [
     CommonModule,
     RouterModule,
-    SharedMaterialModule,
-    HeaderComponent,
-    BreadcrumbComponent
+    SharedMaterialModule
   ],
   template: `
     <div class="dashboard-container">

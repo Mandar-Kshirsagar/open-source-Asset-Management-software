@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, Inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -479,7 +479,8 @@ export class AssetDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -496,15 +497,18 @@ export class AssetDetailComponent implements OnInit {
           next: (asset: Asset) => {
             this.asset = asset;
             this.loading = false;
+            this.cdr.detectChanges();
           },
           error: (error: any) => {
             console.error('Error loading asset:', error);
             this.snackBar.open('Error loading asset', 'Close', { duration: 3000 });
             this.loading = false;
+            this.cdr.detectChanges();
           }
         });
       } else {
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }

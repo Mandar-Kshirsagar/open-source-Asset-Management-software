@@ -75,10 +75,10 @@ namespace AMS.Api.Services
                 var rows = new List<Dictionary<string, object>>();
                 foreach (DataRow row in dataTable.Rows)
                 {
-                    var dict = new Dictionary<string, object>();
+                    var dict = new Dictionary<string, object?>();
                     foreach (DataColumn col in dataTable.Columns)
                     {
-                        dict[col.ColumnName] = row[col] == DBNull.Value ? null : row[col];
+                        dict[col.ColumnName] = row[col] == DBNull.Value ? null : (object?)row[col];
                     }
                     rows.Add(dict);
                 }

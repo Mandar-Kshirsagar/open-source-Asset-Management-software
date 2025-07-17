@@ -2,6 +2,14 @@ using System.ComponentModel.DataAnnotations;
 
 namespace AMS.Api.Models
 {
+    public enum AssetStatus
+    {
+        Available,
+        Assigned,
+        Maintenance,
+        Retired
+    }
+
     public class Asset
     {
         public int Id { get; set; }
@@ -36,7 +44,7 @@ namespace AMS.Api.Models
         
         public DateTime? WarrantyExpiryDate { get; set; }
         
-        public string Status { get; set; } = "Available"; // Available, Assigned, Maintenance, Retired
+        public AssetStatus Status { get; set; } = AssetStatus.Available;
         
         public string Location { get; set; } = string.Empty;
         

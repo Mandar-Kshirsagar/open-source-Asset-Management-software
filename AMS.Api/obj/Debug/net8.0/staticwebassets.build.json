@@ -1,1 +1,39 @@
-{"Version":1,"Hash":"HGcVh22Lj5BiBYbW4pSYac38YZotC3hzrvMBL4LmCy8=","Source":"AMS.Api","BasePath":"_content/AMS.Api","Mode":"Default","ManifestType":"Build","ReferencedProjectsConfiguration":[],"DiscoveryPatterns":[{"Name":"AMS.Api\\wwwroot","Source":"AMS.Api","ContentRoot":"C:\\Users\\mandar\\Desktop\\AMS\\open-source-Asset-Management-software\\AMS.Api\\wwwroot\\","BasePath":"_content/AMS.Api","Pattern":"**"}],"Assets":[],"Endpoints":[]}
+{
+  "Version": 1,
+  "Hash": "TvEQTVxlmP8TAL2yYz52knnqmhEWVe4bbykDZX1KByc=",
+  "Source": "AMS.Api",
+  "BasePath": "_content/AMS.Api",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "AMS.Api\\wwwroot",
+      "Source": "AMS.Api",
+      "ContentRoot": "D:\\open-source-Asset-Management-software\\AMS.Api\\wwwroot\\",
+      "BasePath": "_content/AMS.Api",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "D:\\open-source-Asset-Management-software\\AMS.Api\\wwwroot\\images\\02d9e131-41d4-40e8-a58d-8f5ce632bfb9_anand Steel - logo low.png",
+      "SourceId": "AMS.Api",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\open-source-Asset-Management-software\\AMS.Api\\wwwroot\\",
+      "BasePath": "_content/AMS.Api",
+      "RelativePath": "images/02d9e131-41d4-40e8-a58d-8f5ce632bfb9_anand Steel - logo low.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\images\\02d9e131-41d4-40e8-a58d-8f5ce632bfb9_anand Steel - logo low.png"
+    }
+  ]
+}
