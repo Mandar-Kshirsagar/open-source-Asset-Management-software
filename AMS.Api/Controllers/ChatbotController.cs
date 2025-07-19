@@ -12,17 +12,20 @@ namespace AMS.Api.Controllers
     public class ChatbotController : ControllerBase
     {
         private readonly IAIChatbotService _chatbotService;
+        private readonly IRagQueryService _ragQueryService;
         private readonly IDatabaseSchemaService _schemaService;
         private readonly ISqlQueryService _sqlQueryService;
         private readonly ILogger<ChatbotController> _logger;
 
         public ChatbotController(
             IAIChatbotService chatbotService,
+            IRagQueryService ragQueryService,
             IDatabaseSchemaService schemaService,
             ISqlQueryService sqlQueryService,
             ILogger<ChatbotController> logger)
         {
             _chatbotService = chatbotService;
+            _ragQueryService = ragQueryService;
             _schemaService = schemaService;
             _sqlQueryService = sqlQueryService;
             _logger = logger;
