@@ -103,13 +103,19 @@ builder.Services.AddScoped<RefreshTokenService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<AssetService>();
 builder.Services.AddScoped<AppSettingService>();
+builder.Services.AddScoped<IAssetDataService, AssetDataService>();
+builder.Services.AddSingleton<IVectorDbService, VectorDbService>();
 
 // Register Chatbot Services
 builder.Services.AddScoped<IDatabaseSchemaService, DatabaseSchemaService>();
 builder.Services.AddScoped<ISqlQueryService, SqlQueryService>();
 builder.Services.AddScoped<IAIChatbotService, AIChatbotService>();
+builder.Services.AddScoped<IRagQueryService, RagQueryService>();
 
 builder.Services.AddHttpClient();
+
+// Register background service for data updates
+builder.Services.AddHostedService<AssetDataUpdateService>();
 
 // Configure Swagger
 builder.Services.AddEndpointsApiExplorer();

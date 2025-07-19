@@ -16,6 +16,8 @@
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="Qdrant.Client" Version="1.7.0" />
+    <PackageReference Include="OpenAI" Version="1.7.2" />
   </ItemGroup>
 
 </Project>

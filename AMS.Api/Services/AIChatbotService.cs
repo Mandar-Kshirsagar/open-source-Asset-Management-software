@@ -14,16 +14,19 @@ namespace AMS.Api.Services
         private readonly IDatabaseSchemaService _schemaService;
         private readonly ISqlQueryService _sqlQueryService;
         private readonly ILogger<AIChatbotService> _logger;
+        private readonly IRagQueryService _ragQueryService;
         private readonly Dictionary<string, List<string>> _conversationHistory;
 
         public AIChatbotService(
-            IDatabaseSchemaService schemaService, 
+            IDatabaseSchemaService schemaService,
             ISqlQueryService sqlQueryService,
-            ILogger<AIChatbotService> logger)
+            ILogger<AIChatbotService> logger,
+            IRagQueryService ragQueryService)
         {
             _schemaService = schemaService;
             _sqlQueryService = sqlQueryService;
             _logger = logger;
+            _ragQueryService = ragQueryService;
             _conversationHistory = new Dictionary<string, List<string>>();
         }
 
@@ -45,8 +48,8 @@ namespace AMS.Api.Services
                 switch (intent.Type)
                 {
                     case IntentType.DataQuery:
-                        return await HandleDataQueryAsync(request.Message, sessionId, intent);
-                    
+                        return await _ragQueryService.GetRagResponseAsync(request.Message, sessionId);
+
                     case IntentType.SchemaInquiry:
                         return await HandleSchemaInquiryAsync(request.Message, sessionId);
                     
