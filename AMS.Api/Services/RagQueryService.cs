@@ -32,7 +32,7 @@ namespace AMS.Api.Services
             try
             {
                 // 1. Generate embedding for the query
-                var queryEmbedding = await _openAIClient.Embeddings.GetEmbeddingsAsync(query, "text-embedding-3-small");
+                var queryEmbedding = await _openAIClient.Embeddings.GetEmbeddingsAsync(query); // Remove model argument
 
                 // 2. Search for relevant documents
                 var searchResults = await _vectorDbService.SearchAsync("assets", queryEmbedding);

@@ -11,8 +11,8 @@ namespace AMS.Api.Services
 
     public class AssetDocument
     {
-        public string Id { get; set; }
-        public string Text { get; set; }
-        public Dictionary<string, object> Metadata { get; set; }
+        public required string Id { get; set; }
+        public required string Text { get; set; }
+        public required Dictionary<string, object> Metadata { get; set; }
     }
 }

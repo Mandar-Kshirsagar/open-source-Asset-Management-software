@@ -12,8 +12,8 @@ namespace AMS.Api.Services
 
     public class VectorRecord
     {
-        public string Id { get; set; }
-        public IEnumerable<float> Vector { get; set; }
-        public Dictionary<string, object> Payload { get; set; }
+        public required string Id { get; set; }
+        public required IEnumerable<float> Vector { get; set; }
+        public required Dictionary<string, object> Payload { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { SharedMaterialModule } from '../material.module';
@@ -171,11 +171,17 @@ export class HeaderComponent implements OnInit, OnDestroy {
   appSettings: AppSettings | null = null;
   private appSettingsSubscription: Subscription | undefined;
 
-  constructor(private authService: AuthService, private appConfigService: AppConfigService) {}
+  constructor(
+    private authService: AuthService, 
+    private appConfigService: AppConfigService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.appSettingsSubscription = this.appConfigService.appSettings$.subscribe(settings => {
       this.appSettings = settings;
+      // Trigger change detection to prevent ExpressionChangedAfterItHasBeenCheckedError
+      this.cdr.detectChanges();
     });
   }
 

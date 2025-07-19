@@ -103,19 +103,19 @@ builder.Services.AddScoped<RefreshTokenService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<AssetService>();
 builder.Services.AddScoped<AppSettingService>();
-builder.Services.AddScoped<IAssetDataService, AssetDataService>();
-builder.Services.AddSingleton<IVectorDbService, VectorDbService>();
+// builder.Services.AddScoped<IAssetDataService, AssetDataService>(); // Disabled Qdrant/AI features
+// builder.Services.AddSingleton<IVectorDbService, VectorDbService>(); // Disabled Qdrant/AI features
 
 // Register Chatbot Services
-builder.Services.AddScoped<IDatabaseSchemaService, DatabaseSchemaService>();
-builder.Services.AddScoped<ISqlQueryService, SqlQueryService>();
-builder.Services.AddScoped<IAIChatbotService, AIChatbotService>();
-builder.Services.AddScoped<IRagQueryService, RagQueryService>();
+// builder.Services.AddScoped<IDatabaseSchemaService, DatabaseSchemaService>(); // Disabled Qdrant/AI features
+// builder.Services.AddScoped<ISqlQueryService, SqlQueryService>(); // Disabled Qdrant/AI features
+// builder.Services.AddScoped<IAIChatbotService, AIChatbotService>(); // Disabled Qdrant/AI features
+// builder.Services.AddScoped<IRagQueryService, RagQueryService>(); // Disabled Qdrant/AI features
 
 builder.Services.AddHttpClient();
 
 // Register background service for data updates
-builder.Services.AddHostedService<AssetDataUpdateService>();
+// builder.Services.AddHostedService<AssetDataUpdateService>(); // Disabled Qdrant/AI features
 
 // Configure Swagger
 builder.Services.AddEndpointsApiExplorer();

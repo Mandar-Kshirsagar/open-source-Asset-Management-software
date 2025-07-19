@@ -4,6 +4,7 @@ using AMS.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AMS.Api.Migrations
 {
     [DbContext(typeof(AMSContext))]
-    partial class AMSContextModelSnapshot : ModelSnapshot
+    [Migration("20250719201225_FixAssetStatusEnumMapping")]
+    partial class FixAssetStatusEnumMapping
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -154,12 +157,12 @@ namespace AMS.Api.Migrations
                             Brand = "Dell",
                             Category = "Laptop",
                             Condition = "Excellent",
-                            CreatedAt = new DateTime(2025, 7, 19, 20, 18, 1, 662, DateTimeKind.Utc).AddTicks(4487),
+                            CreatedAt = new DateTime(2025, 7, 19, 20, 12, 25, 188, DateTimeKind.Utc).AddTicks(3826),
                             Description = "Business laptop for office use",
                             Location = "IT Department",
                             Model = "Latitude 5520",
                             Name = "Dell Latitude 5520",
-                            PurchaseDate = new DateTime(2025, 1, 19, 20, 18, 1, 662, DateTimeKind.Utc).AddTicks(4477),
+                            PurchaseDate = new DateTime(2025, 1, 19, 20, 12, 25, 188, DateTimeKind.Utc).AddTicks(3813),
                             PurchasePrice = 1299.99m,
                             SerialNumber = "DL123456789",
                             Status = "Available"
@@ -171,12 +174,12 @@ namespace AMS.Api.Migrations
                             Brand = "HP",
                             Category = "Printer",
                             Condition = "Good",
-                            CreatedAt = new DateTime(2025, 7, 19, 20, 18, 1, 662, DateTimeKind.Utc).AddTicks(4495),
+                            CreatedAt = new DateTime(2025, 7, 19, 20, 12, 25, 188, DateTimeKind.Utc).AddTicks(3840),
                             Description = "Network printer for office printing",
                             Location = "Print Room",
                             Model = "LaserJet Pro M404n",
                             Name = "HP LaserJet Pro M404n",
-                            PurchaseDate = new DateTime(2025, 4, 19, 20, 18, 1, 662, DateTimeKind.Utc).AddTicks(4493),
+                            PurchaseDate = new DateTime(2025, 4, 19, 20, 12, 25, 188, DateTimeKind.Utc).AddTicks(3838),
                             PurchasePrice = 299.99m,
                             SerialNumber = "HP987654321",
                             Status = "Available"
@@ -406,12 +409,12 @@ namespace AMS.Api.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 7, 19, 20, 18, 1, 662, DateTimeKind.Utc).AddTicks(3538),
+                            CreatedAt = new DateTime(2025, 7, 19, 20, 12, 25, 188, DateTimeKind.Utc).AddTicks(2284),
                             Email = "admin@ams.com",
                             FirstName = "System",
                             IsActive = true,
                             LastName = "Administrator",
-                            PasswordHash = "$2a$11$EihPBjMYRtQRtoII.sJfq.Opd85Bl1lK5wWWqZ2BQN4XsB/o1vNSG",
+                            PasswordHash = "$2a$11$YPdY2QlZgbPjSuz7m.jdt.EnlMQrtL6sS.2gzBVgQE80/Wyj0EtqW",
                             Role = "Admin",
                             Username = "admin"
                         });

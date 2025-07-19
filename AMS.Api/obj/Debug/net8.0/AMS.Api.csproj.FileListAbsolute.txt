@@ -434,3 +434,10 @@ C:\Users\mandar\Desktop\AMS\open-source-Asset-Management-software\AMS.Api\obj\De
 C:\Users\mandar\Desktop\AMS\open-source-Asset-Management-software\AMS.Api\obj\Debug\net8.0\AMS.Api.pdb
 C:\Users\mandar\Desktop\AMS\open-source-Asset-Management-software\AMS.Api\obj\Debug\net8.0\AMS.Api.genruntimeconfig.cache
 C:\Users\mandar\Desktop\AMS\open-source-Asset-Management-software\AMS.Api\obj\Debug\net8.0\ref\AMS.Api.dll
+C:\Users\mandar\Desktop\AMS\open-source-Asset-Management-software\AMS.Api\bin\Debug\net8.0\Google.Protobuf.dll
+C:\Users\mandar\Desktop\AMS\open-source-Asset-Management-software\AMS.Api\bin\Debug\net8.0\Grpc.Core.Api.dll
+C:\Users\mandar\Desktop\AMS\open-source-Asset-Management-software\AMS.Api\bin\Debug\net8.0\Grpc.Net.Client.dll
+C:\Users\mandar\Desktop\AMS\open-source-Asset-Management-software\AMS.Api\bin\Debug\net8.0\Grpc.Net.Common.dll
+C:\Users\mandar\Desktop\AMS\open-source-Asset-Management-software\AMS.Api\bin\Debug\net8.0\Newtonsoft.Json.dll
+C:\Users\mandar\Desktop\AMS\open-source-Asset-Management-software\AMS.Api\bin\Debug\net8.0\OpenAI_API.dll
+C:\Users\mandar\Desktop\AMS\open-source-Asset-Management-software\AMS.Api\bin\Debug\net8.0\Qdrant.Client.dll

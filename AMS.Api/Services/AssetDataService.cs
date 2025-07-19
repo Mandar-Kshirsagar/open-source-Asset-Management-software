@@ -69,7 +69,7 @@ namespace AMS.Api.Services
             {
                 try
                 {
-                    var embedding = await openAIClient.Embeddings.GetEmbeddingsAsync(doc.Text, "text-embedding-3-small");
+                    var embedding = await openAIClient.Embeddings.GetEmbeddingsAsync(doc.Text); // Remove model argument
                     vectorRecords.Add(new VectorRecord
                     {
                         Id = doc.Id,

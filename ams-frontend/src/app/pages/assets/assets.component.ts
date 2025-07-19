@@ -32,31 +32,11 @@ import { User } from '../../models/user.model';
   ],
   template: `
     <div class="assets-container">
-      <div class="assets-content">
+      <!-- Page Header with Filters -->
+      <div class="page-header">
         <h1 class="page-title">Assets</h1>
-        
-        <!-- View Toggle and Search -->
-        <div class="assets-actions">
-          <div class="view-toggle">
-            <button mat-button [class.active]="viewMode === 'list'" (click)="viewMode = 'list'">
-              <mat-icon>view_list</mat-icon> List
-            </button>
-            <button mat-button [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'">
-              <mat-icon>view_module</mat-icon> Grid
-            </button>
-          </div>
-          
-          <mat-form-field class="search-field" appearance="outline">
-            <mat-label>Search Assets</mat-label>
-            <input matInput [(ngModel)]="searchTerm" (input)="onSearch()" placeholder="Search...">
-            <mat-icon matSuffix>search</mat-icon>
-          </mat-form-field>
-        </div>
-        <mat-icon>home</mat-icon>
-        <span class="breadcrumb-separator">></span>
-              <span>Assets</span>
       </div>
-
+      
       <!-- Filters and Actions -->
       <div class="filters-container">
         <div class="filter-left">
@@ -313,12 +293,54 @@ import { User } from '../../models/user.model';
       background-color: #f5f5f5;
     }
 
-    /* Header Toolbar */
-    .assets-toolbar {
-      background: linear-gradient(135deg, #3f51b5 0%, #5c6bc0 100%);
-      padding: 0 16px;
-      min-height: 64px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    .page-header {
+      padding: 4px 16px;
+      background: white;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .page-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 500;
+      color: #333;
+      line-height: 1.2;
+    }
+
+    /* Filters */
+    .filters-container {
+      background: white;
+      padding: 8px 16px;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .filter-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .filter-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .filter-select {
+      width: 100px;
+    }
+
+    .go-button {
+      height: 36px;
+      background-color: #6c9bd2;
+      color: white;
+    }
+
+    .search-input {
+      width: 180px;
     }
 
     .app-logo {
@@ -433,12 +455,12 @@ import { User } from '../../models/user.model';
     /* Results Info */
     .results-info {
       background: white;
-      padding: 8px 16px;
+      padding: 4px 16px;
       border-bottom: 1px solid #e0e0e0;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 14px;
+      font-size: 12px;
       color: #666;
     }
 
@@ -883,8 +905,16 @@ export class AssetsComponent implements OnInit, OnDestroy {
   }
 
   // Helper methods
-  getStatusClass(status: string): string {
-    switch (status.toLowerCase()) {
+  getStatusClass(status: string | number): string {
+    let statusKey: string;
+    if (typeof status === 'number') {
+      statusKey = status.toString().toLowerCase();
+    } else if (typeof status === 'string') {
+      statusKey = status.toLowerCase();
+    } else {
+      statusKey = 'ready';
+    }
+    switch (statusKey) {
       case 'ready to deploy':
       case 'active':
         return 'ready';
@@ -899,8 +929,16 @@ export class AssetsComponent implements OnInit, OnDestroy {
     }
   }
 
-  getStatusIcon(status: string): string {
-    switch (status.toLowerCase()) {
+  getStatusIcon(status: string | number): string {
+    let statusKey: string;
+    if (typeof status === 'number') {
+      statusKey = status.toString().toLowerCase();
+    } else if (typeof status === 'string') {
+      statusKey = status.toLowerCase();
+    } else {
+      statusKey = 'ready';
+    }
+    switch (statusKey) {
       case 'ready to deploy':
       case 'active':
         return 'check_circle';

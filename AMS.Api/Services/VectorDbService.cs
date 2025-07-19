@@ -16,8 +16,12 @@ namespace AMS.Api.Services
 
         public VectorDbService(IConfiguration configuration, ILogger<VectorDbService> logger)
         {
-            var qdrantUrl = configuration["Qdrant:Url"];
-            _client = new QdrantClient(qdrantUrl);
+            var qdrantUrl = configuration["Qdrant:Url"] ?? "localhost";
+            // Extract host and port from the URL
+            var uri = new Uri(qdrantUrl);
+            var host = uri.Host;
+            var port = uri.Port;
+            _client = new QdrantClient(host, port);
             _logger = logger;
         }
 
@@ -25,12 +29,9 @@ namespace AMS.Api.Services
         {
             try
             {
-                var collectionsResponse = await _client.GetCollectionsAsync();
-                if (collectionsResponse.Collections.All(c => c.Name != collectionName))
-                {
-                    await _client.CreateCollectionAsync(collectionName, new VectorParams { Size = vectorSize, Distance = Distance.Cosine });
-                    _logger.LogInformation("Collection {collectionName} created.", collectionName);
-                }
+                // Just try to create the collection; if it already exists, catch and log the exception
+                await _client.CreateCollectionAsync(collectionName, new VectorParams { Size = vectorSize, Distance = Distance.Cosine });
+                _logger.LogInformation("Collection {collectionName} created or already exists.", collectionName);
             }
             catch (Exception ex)
             {
@@ -52,13 +53,13 @@ namespace AMS.Api.Services
                     };
                     foreach (var (key, value) in r.Payload)
                     {
-                        point.Payload[key] = Value.For(value.ToString());
+                        point.Payload[key] = value.ToString(); // Remove Value.For
                     }
                     return point;
-                });
+                }).ToList();
 
-                await _client.UpsertPointsAsync(collectionName, points);
-                _logger.LogInformation("Upserted {count} points to {collectionName}", points.Count(), collectionName);
+                await _client.UpsertAsync(collectionName, points); // Use UpsertAsync
+                _logger.LogInformation("Upserted {count} points to {collectionName}", points.Count, collectionName);
             }
             catch (Exception ex)
             {
@@ -71,13 +72,13 @@ namespace AMS.Api.Services
         {
             try
             {
-                var searchResult = await _client.SearchPointsAsync(
-                    collectionName: collectionName,
-                    vector: vector.ToArray(),
-                    limit: limit
+                var searchResult = await _client.SearchAsync(
+                    collectionName,
+                    vector.ToArray(),
+                    limit: (ulong)limit // Fix: cast to ulong
                 );
 
-                return searchResult.Select(p => p.Payload["text"].StringValue);
+                return searchResult.Select(p => p.Payload["text"].ToString());
             }
             catch (Exception ex)
             {
