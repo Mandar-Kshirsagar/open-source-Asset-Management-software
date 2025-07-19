@@ -41,6 +41,10 @@ namespace AMS.Api.Data
                 entity.Property(e => e.PurchasePrice).HasPrecision(18, 2);
                 entity.HasIndex(e => e.AssetTag).IsUnique();
                 entity.HasIndex(e => e.SerialNumber);
+
+                entity.Property(e => e.Status)
+                    .HasConversion<string>()
+                    .HasMaxLength(50);
                 
                 entity.HasOne(e => e.AssignedToUser)
                     .WithMany(e => e.AssignedAssets)
@@ -136,7 +140,7 @@ namespace AMS.Api.Data
                     SerialNumber = "DL123456789",
                     PurchasePrice = 1299.99m,
                     PurchaseDate = DateTime.UtcNow.AddMonths(-6),
-                    Status = (AssetStatus)Enum.Parse(typeof(AssetStatus), "Available"),
+                    Status = AssetStatus.Available,
                     Location = "IT Department",
                     Condition = "Excellent",
                     CreatedAt = DateTime.UtcNow
@@ -153,7 +157,7 @@ namespace AMS.Api.Data
                     SerialNumber = "HP987654321",
                     PurchasePrice = 299.99m,
                     PurchaseDate = DateTime.UtcNow.AddMonths(-3),
-                    Status = (AssetStatus)Enum.Parse(typeof(AssetStatus), "Available"),
+                    Status = AssetStatus.Available,
                     Location = "Print Room",
                     Condition = "Good",
                     CreatedAt = DateTime.UtcNow

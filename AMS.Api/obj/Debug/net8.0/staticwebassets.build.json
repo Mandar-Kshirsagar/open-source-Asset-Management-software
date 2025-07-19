@@ -1,10 +1,6 @@
 {
   "Version": 1,
-<<<<<<< HEAD
-  "Hash": "4j6u827K5alRbARB0bfVo7/6G4YfABHJbOUJLNTYihM=",
-=======
-  "Hash": "TvEQTVxlmP8TAL2yYz52knnqmhEWVe4bbykDZX1KByc=",
->>>>>>> parent of 808c996 (minor changes)
+  "Hash": "GAP6m9VRtaiS8wkitdOAo4nb6PRsFn/5Jy5rvMiW/GA=",
   "Source": "AMS.Api",
   "BasePath": "_content/AMS.Api",
   "Mode": "Default",
@@ -14,17 +10,17 @@
     {
       "Name": "AMS.Api\\wwwroot",
       "Source": "AMS.Api",
-      "ContentRoot": "D:\\open-source-Asset-Management-software\\AMS.Api\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\mandar\\Desktop\\AMS\\open-source-Asset-Management-software\\AMS.APi\\wwwroot\\",
       "BasePath": "_content/AMS.Api",
       "Pattern": "**"
     }
   ],
   "Assets": [
     {
-      "Identity": "D:\\open-source-Asset-Management-software\\AMS.Api\\wwwroot\\images\\02d9e131-41d4-40e8-a58d-8f5ce632bfb9_anand Steel - logo low.png",
+      "Identity": "C:\\Users\\mandar\\Desktop\\AMS\\open-source-Asset-Management-software\\AMS.APi\\wwwroot\\images\\02d9e131-41d4-40e8-a58d-8f5ce632bfb9_anand Steel - logo low.png",
       "SourceId": "AMS.Api",
       "SourceType": "Discovered",
-      "ContentRoot": "D:\\open-source-Asset-Management-software\\AMS.Api\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\mandar\\Desktop\\AMS\\open-source-Asset-Management-software\\AMS.APi\\wwwroot\\",
       "BasePath": "_content/AMS.Api",
       "RelativePath": "images/02d9e131-41d4-40e8-a58d-8f5ce632bfb9_anand Steel - logo low.png",
       "AssetKind": "All",
@@ -38,25 +34,6 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\images\\02d9e131-41d4-40e8-a58d-8f5ce632bfb9_anand Steel - logo low.png"
-    },
-    {
-      "Identity": "C:\\Users\\mandar\\Desktop\\AMS\\open-source-Asset-Management-software\\AMS.Api\\wwwroot\\images\\e6e73f43-601c-49a7-952b-b5319a0b5892_WhatsApp Image 2025-07-18 at 20.18.43_45739829.jpg",
-      "SourceId": "AMS.Api",
-      "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\mandar\\Desktop\\AMS\\open-source-Asset-Management-software\\AMS.Api\\wwwroot\\",
-      "BasePath": "_content/AMS.Api",
-      "RelativePath": "images/e6e73f43-601c-49a7-952b-b5319a0b5892_WhatsApp Image 2025-07-18 at 20.18.43_45739829.jpg",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "AssetMergeBehavior": "PreferTarget",
-      "AssetMergeSource": "",
-      "RelatedAsset": "",
-      "AssetTraitName": "",
-      "AssetTraitValue": "",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\images\\e6e73f43-601c-49a7-952b-b5319a0b5892_WhatsApp Image 2025-07-18 at 20.18.43_45739829.jpg"
     }
   ]
 }

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\mandar\\Desktop\\AMS\\open-source-Asset-Management-software\\AMS.Api\\AMS.Api.csproj": {}
+    "C:\\Users\\mandar\\Desktop\\AMS\\open-source-Asset-Management-software\\AMS.APi\\AMS.Api.csproj": {}
   },
   "projects": {
-    "C:\\Users\\mandar\\Desktop\\AMS\\open-source-Asset-Management-software\\AMS.Api\\AMS.Api.csproj": {
+    "C:\\Users\\mandar\\Desktop\\AMS\\open-source-Asset-Management-software\\AMS.APi\\AMS.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\mandar\\Desktop\\AMS\\open-source-Asset-Management-software\\AMS.Api\\AMS.Api.csproj",
+        "projectUniqueName": "C:\\Users\\mandar\\Desktop\\AMS\\open-source-Asset-Management-software\\AMS.APi\\AMS.Api.csproj",
         "projectName": "AMS.Api",
-        "projectPath": "C:\\Users\\mandar\\Desktop\\AMS\\open-source-Asset-Management-software\\AMS.Api\\AMS.Api.csproj",
+        "projectPath": "C:\\Users\\mandar\\Desktop\\AMS\\open-source-Asset-Management-software\\AMS.APi\\AMS.Api.csproj",
         "packagesPath": "C:\\Users\\mandar\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\mandar\\Desktop\\AMS\\open-source-Asset-Management-software\\AMS.Api\\obj\\",
+        "outputPath": "C:\\Users\\mandar\\Desktop\\AMS\\open-source-Asset-Management-software\\AMS.APi\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
