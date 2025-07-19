@@ -457,12 +457,12 @@ Just ask your question in natural language, and I'll generate and execute the ap
 
         private string GenerateNaturalLanguageResponse(QueryIntent intent, SqlQueryResult queryResult)
         {
-            if (queryResult.Data == null || !(queryResult.Data as System.Collections.IEnumerable)?.Cast<object>().Any() == true)
+            if (queryResult.Data == null || !queryResult.Data.Any())
             {
                 return "The query executed successfully but returned no results.";
             }
 
-            var data = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(JsonSerializer.Serialize(queryResult.Data));
+            var data = queryResult.Data;
 
             if (intent.Operation == "COUNT")
             {
@@ -484,7 +484,8 @@ Just ask your question in natural language, and I'll generate and execute the ap
 
             if (queryResult.RowCount == 1)
             {
-                var record = data.First();
+                var record = data?.First();
+                if (record == null) return "The query executed successfully but returned no results.";
                 responseBuilder.AppendLine("Here is the record I found:");
                 
                 // Attempt to make a more human-readable sentence for a single record

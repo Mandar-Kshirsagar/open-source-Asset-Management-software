@@ -72,7 +72,7 @@ namespace AMS.Api.Services
                 await Task.Run(() => adapter.Fill(dataTable));
 
                 // Convert DataTable to a more usable format
-                var rows = new List<Dictionary<string, object>>();
+                var rows = new List<Dictionary<string, object?>>();
                 foreach (DataRow row in dataTable.Rows)
                 {
                     var dict = new Dictionary<string, object?>();

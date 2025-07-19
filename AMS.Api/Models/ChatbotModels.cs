@@ -56,7 +56,7 @@ namespace AMS.Api.Models
     {
         public bool IsSuccessful { get; set; } = true;
         public string? ErrorMessage { get; set; }
-        public object? Data { get; set; }
+        public List<Dictionary<string, object?>>? Data { get; set; }
         public int RowCount { get; set; }
         public string ExecutedSql { get; set; } = string.Empty;
     }

@@ -5,6 +5,10 @@
       "PackagePath": "staticwebassets\\images\\02d9e131-41d4-40e8-a58d-8f5ce632bfb9_anand Steel - logo low.png"
     },
     {
+      "Id": "C:\\Users\\mandar\\Desktop\\AMS\\open-source-Asset-Management-software\\AMS.Api\\wwwroot\\images\\e6e73f43-601c-49a7-952b-b5319a0b5892_WhatsApp Image 2025-07-18 at 20.18.43_45739829.jpg",
+      "PackagePath": "staticwebassets\\images\\e6e73f43-601c-49a7-952b-b5319a0b5892_WhatsApp Image 2025-07-18 at 20.18.43_45739829.jpg"
+    },
+    {
       "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.AMS.Api.Microsoft.AspNetCore.StaticWebAssets.props",
       "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
     },
