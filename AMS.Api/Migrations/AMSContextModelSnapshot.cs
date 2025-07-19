@@ -22,6 +22,44 @@ namespace AMS.Api.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("AMS.Api.Models.AppSetting", b =>
+                {
+                    b.Property<string>("Key")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.HasKey("Key");
+
+                    b.ToTable("AppSettings");
+
+                    b.HasData(
+                        new
+                        {
+                            Key = "CompanyName",
+                            Value = "Asset Management System"
+                        },
+                        new
+                        {
+                            Key = "CompanyLogoUrl",
+                            Value = "/images/default_logo.png"
+                        },
+                        new
+                        {
+                            Key = "DefaultTheme",
+                            Value = "light"
+                        },
+                        new
+                        {
+                            Key = "DefaultLanguage",
+                            Value = "en-US"
+                        });
+                });
+
             modelBuilder.Entity("AMS.Api.Models.Asset", b =>
                 {
                     b.Property<int>("Id")
@@ -91,7 +129,8 @@ namespace AMS.Api.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime?>("WarrantyExpiryDate")
                         .HasColumnType("datetime2");
@@ -115,12 +154,12 @@ namespace AMS.Api.Migrations
                             Brand = "Dell",
                             Category = "Laptop",
                             Condition = "Excellent",
-                            CreatedAt = new DateTime(2025, 7, 13, 13, 32, 33, 630, DateTimeKind.Utc).AddTicks(2098),
+                            CreatedAt = new DateTime(2025, 7, 19, 14, 18, 2, 459, DateTimeKind.Utc).AddTicks(7769),
                             Description = "Business laptop for office use",
                             Location = "IT Department",
                             Model = "Latitude 5520",
                             Name = "Dell Latitude 5520",
-                            PurchaseDate = new DateTime(2025, 1, 13, 13, 32, 33, 630, DateTimeKind.Utc).AddTicks(2086),
+                            PurchaseDate = new DateTime(2025, 1, 19, 14, 18, 2, 459, DateTimeKind.Utc).AddTicks(7753),
                             PurchasePrice = 1299.99m,
                             SerialNumber = "DL123456789",
                             Status = "Available"
@@ -132,12 +171,12 @@ namespace AMS.Api.Migrations
                             Brand = "HP",
                             Category = "Printer",
                             Condition = "Good",
-                            CreatedAt = new DateTime(2025, 7, 13, 13, 32, 33, 630, DateTimeKind.Utc).AddTicks(2107),
+                            CreatedAt = new DateTime(2025, 7, 19, 14, 18, 2, 459, DateTimeKind.Utc).AddTicks(7779),
                             Description = "Network printer for office printing",
                             Location = "Print Room",
                             Model = "LaserJet Pro M404n",
                             Name = "HP LaserJet Pro M404n",
-                            PurchaseDate = new DateTime(2025, 4, 13, 13, 32, 33, 630, DateTimeKind.Utc).AddTicks(2105),
+                            PurchaseDate = new DateTime(2025, 4, 19, 14, 18, 2, 459, DateTimeKind.Utc).AddTicks(7777),
                             PurchasePrice = 299.99m,
                             SerialNumber = "HP987654321",
                             Status = "Available"
@@ -367,12 +406,12 @@ namespace AMS.Api.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 7, 13, 13, 32, 33, 630, DateTimeKind.Utc).AddTicks(702),
+                            CreatedAt = new DateTime(2025, 7, 19, 14, 18, 2, 459, DateTimeKind.Utc).AddTicks(6027),
                             Email = "admin@ams.com",
                             FirstName = "System",
                             IsActive = true,
                             LastName = "Administrator",
-                            PasswordHash = "$2a$11$e0GjoqNVwrkuoQa3.rT66u55Gjirv7p1Hyqhk.KFPtZVbIt4.UaXy",
+                            PasswordHash = "$2a$11$QdmTRctk/h1gWzQe6gm8GuN/.hDTnxmPx2L4DJO3u5ujYuaOK0Uw2",
                             Role = "Admin",
                             Username = "admin"
                         });
