@@ -27,24 +27,27 @@ import { User } from '../../models/user.model';
   ],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush // Add OnPush strategy
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HeaderComponent implements OnInit {
-  @Input() isSidebarOpen: boolean = false;
-  @Input() user: User | null = null;
-  @Output() sidebarToggle = new EventEmitter<void>();
+  @Input() currentUser: User | null = null;
+  @Input() actionButtonText: string = '';
+  @Input() actionButtonIcon: string = '';
+  @Output() actionClick = new EventEmitter<void>();
 
   constructor(private authService: AuthService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
-    this.authService.currentUser$.subscribe((user: User | null) => {
-      this.user = user;
-      this.cdr.detectChanges();
-    });
+    if (!this.currentUser) {
+      this.authService.currentUser$.subscribe((user: User | null) => {
+        this.currentUser = user;
+        this.cdr.detectChanges();
+      });
+    }
   }
 
-  toggleSidebar(): void {
-    this.sidebarToggle.emit();
+  onActionClick(): void {
+    this.actionClick.emit();
   }
 
   logout(): void {
