@@ -883,7 +883,10 @@ export class AssetsComponent implements OnInit, OnDestroy {
   }
 
   // Helper methods
-  getStatusClass(status: string): string {
+  getStatusClass(status: string | undefined | null): string {
+    if (typeof status !== 'string') {
+      return 'unknown'; // Or a default class for unknown status
+    }
     switch (status.toLowerCase()) {
       case 'ready to deploy':
       case 'active':
@@ -895,11 +898,14 @@ export class AssetsComponent implements OnInit, OnDestroy {
       case 'retired':
         return 'retired';
       default:
-        return 'ready';
+        return 'unknown';
     }
   }
 
-  getStatusIcon(status: string): string {
+  getStatusIcon(status: string | undefined | null): string {
+    if (typeof status !== 'string') {
+      return 'help'; // Or a default icon for unknown status
+    }
     switch (status.toLowerCase()) {
       case 'ready to deploy':
       case 'active':

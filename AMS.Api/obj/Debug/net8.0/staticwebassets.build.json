@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "GAP6m9VRtaiS8wkitdOAo4nb6PRsFn/5Jy5rvMiW/GA=",
+  "Hash": "Jt6uaVDNnq9X1pywjHkcMYgcWK4+0KuzrdydsrNsWwI=",
   "Source": "AMS.Api",
   "BasePath": "_content/AMS.Api",
   "Mode": "Default",
@@ -10,17 +10,17 @@
     {
       "Name": "AMS.Api\\wwwroot",
       "Source": "AMS.Api",
-      "ContentRoot": "C:\\Users\\mandar\\Desktop\\AMS\\open-source-Asset-Management-software\\AMS.APi\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\mandar\\Desktop\\AMS\\open-source-Asset-Management-software\\AMS.Api\\wwwroot\\",
       "BasePath": "_content/AMS.Api",
       "Pattern": "**"
     }
   ],
   "Assets": [
     {
-      "Identity": "C:\\Users\\mandar\\Desktop\\AMS\\open-source-Asset-Management-software\\AMS.APi\\wwwroot\\images\\02d9e131-41d4-40e8-a58d-8f5ce632bfb9_anand Steel - logo low.png",
+      "Identity": "C:\\Users\\mandar\\Desktop\\AMS\\open-source-Asset-Management-software\\AMS.Api\\wwwroot\\images\\02d9e131-41d4-40e8-a58d-8f5ce632bfb9_anand Steel - logo low.png",
       "SourceId": "AMS.Api",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\mandar\\Desktop\\AMS\\open-source-Asset-Management-software\\AMS.APi\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\mandar\\Desktop\\AMS\\open-source-Asset-Management-software\\AMS.Api\\wwwroot\\",
       "BasePath": "_content/AMS.Api",
       "RelativePath": "images/02d9e131-41d4-40e8-a58d-8f5ce632bfb9_anand Steel - logo low.png",
       "AssetKind": "All",
