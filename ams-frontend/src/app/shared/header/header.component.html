@@ -1,32 +1,33 @@
 <mat-toolbar color="primary">
-  <button mat-icon-button (click)="toggleSidebar()" aria-label="Toggle sidebar">
-    <mat-icon>menu</mat-icon>
-  </button>
-  
-  <span class="app-title">Asset Management System</span>
-  
+  <div class="toolbar-left">
+    <img src="assets/logo.png" alt="AMS Logo" class="logo">
+    <span class="app-title">Asset Management System</span>
+  </div>
+
   <span class="spacer"></span>
-  
-  <div class="user-info" *ngIf="user">
-    <span class="user-name">{{ user.firstName }} {{ user.lastName }}</span>
-    <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="User menu">
-      <mat-icon>account_circle</mat-icon>
+
+  <div class="toolbar-right">
+    <button *ngIf="actionButtonText" mat-raised-button color="accent" (click)="onActionClick()">
+      <mat-icon *ngIf="actionButtonIcon">{{ actionButtonIcon }}</mat-icon>
+      {{ actionButtonText }}
     </button>
     
-    <mat-menu #userMenu="matMenu">
-      <button mat-menu-item>
-        <mat-icon>person</mat-icon>
-        <span>Profile</span>
+    <div *ngIf="currentUser" class="user-info">
+      <button mat-button [matMenuTriggerFor]="userMenu">
+        <mat-icon>account_circle</mat-icon>
+        <span class="user-name">{{ currentUser.firstName }} {{ currentUser.lastName }}</span>
+        <mat-icon>arrow_drop_down</mat-icon>
       </button>
-      <button mat-menu-item>
-        <mat-icon>settings</mat-icon>
-        <span>Settings</span>
-      </button>
-      <mat-divider></mat-divider>
-      <button mat-menu-item (click)="logout()">
-        <mat-icon>logout</mat-icon>
-        <span>Logout</span>
-      </button>
-    </mat-menu>
+      <mat-menu #userMenu="matMenu">
+        <button mat-menu-item routerLink="/profile">
+          <mat-icon>person</mat-icon>
+          <span>Profile</span>
+        </button>
+        <button mat-menu-item (click)="logout()">
+          <mat-icon>exit_to_app</mat-icon>
+          <span>Logout</span>
+        </button>
+      </mat-menu>
+    </div>
   </div>
 </mat-toolbar>
